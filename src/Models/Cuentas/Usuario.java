@@ -1,4 +1,4 @@
-package Models;
+package Models.Cuentas;
 
 import Models.Roles.Rol;
 

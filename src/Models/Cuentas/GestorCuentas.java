@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import Excepciones.MaxIntentosException;
 import Excepciones.NoPersmisoException;
+import Excepciones.OpcionNoDisponible;
 import Excepciones.UsuarioNoEncontradoException;
 import Models.Permisos.Permiso;
 import Utils.EncoderContrasenyas;
@@ -52,7 +53,6 @@ public class GestorCuentas {
                     usuarioEncontrado = buscarEmail(email);
                     if (usuarioEncontrado == null) {
                         throw new UsuarioNoEncontradoException();
-
                     } else {
                         finBusqueda = true;
                     }
@@ -92,15 +92,14 @@ public class GestorCuentas {
                     finBusqueda = true;
                     break;
                 default:
-                    System.out.println("Opción no disponible");
-                    break;
+                    throw new UsuarioNoEncontradoException();
             }
         }
         return usuarioEncontrado;
     }
 
-    public Usuario inicioSesion() throws MaxIntentosException {
-        boolean atras = false;
+    public boolean inicioSesion() throws MaxIntentosException, UsuarioNoEncontradoException {
+        boolean sesionIniciada = false;
         Usuario usuarioValido = null;
         boolean contrasenyaValida = false;
         int intentos = 0;
@@ -108,19 +107,18 @@ public class GestorCuentas {
         System.out.println("INICIAR SESIÓN:");
         System.out.println("---------------");
 
-        while (!atras && usuarioValido == null) {
+        while (!sesionIniciada && usuarioValido == null) {
             System.out.println("Introduzca correo electrónico:");
             String email = Input.validarEmail(Input.scanner());
 
             if (email != null) {
                 usuarioValido = buscarEmail(email);
                 if (usuarioValido == null) {
-                    System.out.println("El usuario no existe.");
-                    atras = true;
+                    throw new UsuarioNoEncontradoException();
                 }
             }
         }
-        while (!atras && usuarioValido != null && !contrasenyaValida) {
+        while (!sesionIniciada && !contrasenyaValida) {
 
             System.out.println("Introduzca contraseña;");
 
@@ -141,8 +139,9 @@ public class GestorCuentas {
 
         if (usuarioValido != null && contrasenyaValida) {
             usuarioActivo = usuarioValido;
+            sesionIniciada = true;
         }
-        return usuarioActivo;
+        return sesionIniciada;
     }
 
     public void crearCuenta() throws MaxIntentosException {
@@ -194,45 +193,57 @@ public class GestorCuentas {
         }
     }
 
-    public void gestionarUsuarios() throws NoPersmisoException {
+    public void mostrarUsuarios() {
+        System.out.println("-------------------");
+        for (Usuario usuario : usuariosList) {
+            System.out.println("Email: " + usuario.getEmail());
+            System.out.println("Nombre: " + usuario.getNombre());
+            System.out.println("Apellido: " + usuario.getApellido());
+            System.out.println("Rol: " + usuario.getRol().getNombre());
+            System.out.println("-------------------");
+        }
+    }
+
+    public void menuUsuarios() throws NoPersmisoException, UsuarioNoEncontradoException {
         boolean atras = false;
-        boolean permisoLectura = false;
+        boolean permiso = false;
         boolean permisoEscritura = false;
         int contador = 0;
-        while (!permisoLectura && contador < usuarioActivo.getRol().getPermisos().size()) {
+        while (!permiso && contador < usuarioActivo.getRol().getPermisos().size()) {
             Permiso permisoUsuario = usuarioActivo.getRol().getPermisos().get(contador);
             if (permisoUsuario.getClass().getSimpleName().equals("PermisoCuentas")) {
-                permisoLectura = permisoUsuario.getLectura();
+                permiso = true;
                 permisoEscritura = permisoUsuario.getEscritura();
             } else {
                 throw new NoPersmisoException();
             }
             contador++;
         }
-        while (!atras) {
+        while (!atras && permiso) {
             System.out.println("GESTIÓN DE USUARIOS:");
             System.out.println("-------------------:");
-            if (permisoLectura && !permisoEscritura) {
+            if (!permisoEscritura) {
                 System.out.println("1) Mostrar Usuarios");
                 System.out.println("2) Buscar Usuario");
                 System.out.println("3) atras");
             }
+            if (permisoEscritura) {
+                System.out.println("1) Mostrar Usuarios");
+                System.out.println("2) Buscar Usuario");
+                System.out.println("3) Modificar Usuario");
+                System.out.println("4) Eliminar Usuario");
+                System.out.println("5) atras");
+            }
             int eleccion = Input.comprobarEntero(Input.scanner());
             switch (eleccion) {
                 case 1:
-                    for (Usuario usuario : usuariosList) {
-                        System.out.println("Email: " + usuario.getEmail());
-                        System.out.println("Nombre: " + usuario.getNombre());
-                        System.out.println("Apellido: " + usuario.getApellido());
-                        System.out.println("Rol: " + usuario.getRol().getNombre());
-                        System.out.println("-------------------");
-                    }
+                    mostrarUsuarios();
                     break;
                 case 2:
                     Usuario tempUsuario;
                     try {
                         tempUsuario = buscarUsuario();
-
+                        System.out.println("-------------------");
                         System.out.println("Email: " + tempUsuario.getEmail());
                         System.out.println("Nombre: " + tempUsuario.getNombre());
                         System.out.println("Apellido: " + tempUsuario.getApellido());
@@ -242,11 +253,84 @@ public class GestorCuentas {
                         System.out.println(e);
                     }
                     break;
+                case 3:
+                    if (permisoEscritura) {
+                        mostrarUsuarios();
+                        System.out.println("Elige un usuario:");
+
+                        try {
+                            tempUsuario = buscarUsuario();
+                            System.out.println("-------------------");
+                            System.out.println("Email: " + tempUsuario.getEmail());
+                            System.out.println("Nombre: " + tempUsuario.getNombre());
+                            System.out.println("Apellido: " + tempUsuario.getApellido());
+                            System.out.println("Rol: " + tempUsuario.getRol().getNombre());
+                            System.out.println("-------------------");
+                            modificarUsuarios(tempUsuario);
+                        } catch (UsuarioNoEncontradoException | OpcionNoDisponible e) {
+                            System.out.println(e);
+                        }
+                    } else {
+                        atras = true;
+                    }
+                    break;
+                case 4:
+                    if (permisoEscritura) {
+
+                    } else {
+                        System.out.println("Opción no disponible");
+                    }
+                    break;
+                case 5:
+                    if (permisoEscritura) {
+                        atras = true;
+                    } else {
+                        System.out.println("Opción no disponible");
+                    }
+                    break;
                 default:
+                    System.out.println("Opción no disponible");
                     break;
             }
 
         }
 
+    }
+
+    public void modificarUsuarios(Usuario usuario) throws OpcionNoDisponible {
+        boolean atras = false;
+
+        System.out.println("-------------------");
+        System.out.println("MODIFICAR USUARIO: ");
+        System.out.println(usuario.getEmail());
+        System.out.println("-------------------");
+        while (!atras) {
+            System.out.println("1) Cambiar nombre");
+            System.out.println("2) Cambiar apellido");
+            System.out.println("3) Cambiar Email");
+            System.out.println("4) Cambiar contraseña");
+            System.out.println("5) Atrás");
+
+            int eleccion = Input.comprobarEntero(Input.scanner());
+            switch (eleccion) {
+                case 1:
+                    usuario.setNombre(Input.comprobarSoloLetras(Input.scanner()));
+                    break;
+                case 2:
+                    usuario.setApellido(Input.comprobarSoloLetras(Input.scanner()));
+                    break;
+                case 3:
+                    usuario.setEmail(Input.comprobarSoloLetras(Input.scanner()));
+                    break;
+                case 4:
+                    System.out.println("Contraseña reiniciada");
+                    System.out
+                            .println("Se ha enviado un correo para crear una nueva contraseña a " + '"'
+                                    + usuario.getEmail() + '"');
+                    usuario.reiniciarContrasenya();
+                default:
+                    throw new OpcionNoDisponible();
+            }
+        }
     }
 }

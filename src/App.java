@@ -1,26 +1,35 @@
+import java.util.ArrayList;
+
 import Excepciones.MaxIntentosException;
-import Excepciones.NoPersmisoException;
+import Excepciones.OpcionNoDisponible;
+import Excepciones.UsuarioNoEncontradoException;
 import Models.Cuentas.GestorCuentas;
-import Models.Cuentas.Usuario;
+import Models.Permisos.Permiso;
 import Utils.Input;
 
 public class App {
-    static Usuario sesionIniciada;
+    static boolean sesionIniciada = false;
     static boolean fin = false;
     static GestorCuentas gestor = new GestorCuentas();
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Bienvenido");
-        System.out.println("-----------");
-        while (!fin && sesionIniciada != null) {
-            fin = menuInicial();
-        }
+        System.out.println("BIENVENIDO");
         while (!fin) {
-            fin = menuInicial();
+            while (!fin && !sesionIniciada) {
+                try {
+                    menuInicial();
+                } catch (OpcionNoDisponible e) {
+                    System.out.println(e + ": Elija una opción valida");
+                }
+            }
+            while (!fin && sesionIniciada) {
+                menuPrincipal();
+            }
         }
     }
 
-    private static boolean menuInicial() {
+    private static void menuInicial() throws OpcionNoDisponible {
+        System.out.println("------------------");
         System.out.println("1) Iniciar Sesión");
         System.out.println("2) Crear nuevo usuario");
         System.out.println("3) Salir");
@@ -31,7 +40,7 @@ public class App {
             case 1:
                 try {
                     sesionIniciada = gestor.inicioSesion();
-                } catch (MaxIntentosException e) {
+                } catch (MaxIntentosException | UsuarioNoEncontradoException e) {
                     System.out.println("Error al iniciar sesión: " + e.getMessage());
                 }
                 break;
@@ -43,22 +52,40 @@ public class App {
                     System.out.println("Error al crear cuenta: " + e.getMessage());
                 }
                 break;
+
             case 3:
-                try {
-                    gestor.gestionUsuarios();
-                } catch (NoPersmisoException e) {
-                    System.out.println(e);
-                }
-                break;
-            case 4:
                 fin = true;
                 break;
 
             default:
-                System.out.println("Opción no disponible");
-                break;
+                throw new OpcionNoDisponible();
+
         }
-        return fin;
+    }
+
+    private static void menuPrincipal() throws OpcionNoDisponible {
+        System.out.println("MENU PRINCIPAL");
+        ArrayList<Permiso> permisosActivos = gestor.getUsuarioActivo().getRol().getPermisos();
+        for (int i = 0; i < (permisosActivos.size()); i++) {
+            System.out.println((i + 1) + permisosActivos.get(i).getCabeceraAcceso());
+            permisosActivos.get(i).setGestor(gestor);
+        }
+        int Acceso = permisosActivos.size();
+        System.out.println((Acceso + 1) + ") Cerrar sesión");
+        System.out.println((Acceso + 2) + ") Salir");
+
+        int eleccion = Input.comprobarEntero(Input.scanner());
+
+        if (eleccion >= 1 && eleccion <= permisosActivos.size()) {
+            permisosActivos.get(eleccion - 1).accesoMenu();
+        } else if (eleccion == Acceso + 1) {
+            sesionIniciada = false; // Cerrar sesión
+        } else if (eleccion == Acceso + 2) {
+            fin = true; // Salir
+        } else {
+            throw new OpcionNoDisponible();
+        }
     }
 
 }
+// Solucionar excepcion cambiar contraseña salta opcionNoDisponible

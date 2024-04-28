@@ -64,4 +64,9 @@ public class Usuario {
     public byte[] getSalt() {
         return salt;
     }
+
+    public void reiniciarContrasenya() {
+        this.contrasenyaCodificada = null;
+        this.salt = null;
+    }
 }

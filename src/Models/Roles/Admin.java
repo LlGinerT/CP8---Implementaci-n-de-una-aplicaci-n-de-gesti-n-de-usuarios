@@ -13,6 +13,6 @@ public class Admin extends Rol {
     @Override
     protected void permisosIniciales() {
         permisos = new ArrayList<>();
-        permisos.add(new PermisoCuentas(true, false));
+        permisos.add(new PermisoCuentas(true, true));
     }
 }

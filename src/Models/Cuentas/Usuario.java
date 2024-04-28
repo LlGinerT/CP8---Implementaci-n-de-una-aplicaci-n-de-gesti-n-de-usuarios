@@ -1,18 +1,21 @@
 package Models.Cuentas;
 
 import Models.Roles.Rol;
+import Utils.EncoderContrasenyas;
 
 class Usuario {
 
     private String nombre;
     private String apellido;
     private String email;
+    private Rol rol;
     private String contrasenyaCodificada;
     private byte[] salt;
-    private Rol rol;
 
-    public Usuario(Rol rol) {
-        this.rol = rol;
+    public Usuario(String nombre, String apellido, String email) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
     }
 
     public String getNombre() {
@@ -39,19 +42,24 @@ class Usuario {
         this.email = email;
     }
 
-    public String getContrasenyaCodificada() {
-        return contrasenyaCodificada;
-    }
-
-    public void setContrasenyaCodificada(String contraseña) {
-        this.contrasenyaCodificada = contraseña;
-    }
-
     public Rol getRol() {
         return rol;
     }
 
     public void setRol(Rol rol) {
         this.rol = rol;
+    }
+
+    public String getContrasenyaCodificada() {
+        return contrasenyaCodificada;
+    }
+
+    public void setContrasenyaCodificada(String contrasenya) {
+        this.salt = EncoderContrasenyas.generateSalt();
+        this.contrasenyaCodificada = EncoderContrasenyas.encodeContrasenya(contrasenya, salt);
+    }
+
+    public byte[] getSalt() {
+        return salt;
     }
 }

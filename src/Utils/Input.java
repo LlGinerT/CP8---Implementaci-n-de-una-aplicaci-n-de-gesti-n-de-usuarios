@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 public class Input {
     static Scanner scanner = new Scanner(System.in);
 
-    public static String inputUsuario() {
+    public static String scanner() {
         return scanner.nextLine();
     }
 
@@ -15,8 +15,20 @@ public class Input {
         while (true) {
             try {
                 return Integer.parseInt(inputUsuario);
-            } catch (NumberFormatException e) {
+            } catch (Exception e) {
                 System.out.println("Valor erróneo. Introduce un número entero válido.");
+                inputUsuario = scanner.nextLine();
+            }
+        }
+    }
+
+    public static String comprobarSoloLetras(String inputUsuario) {
+        while (true) {
+
+            if (inputUsuario.matches("[a-zA-Z]+")) {
+                return inputUsuario;
+            } else {
+                System.out.println("Solo puede contener Letras");
                 inputUsuario = scanner.nextLine();
             }
         }

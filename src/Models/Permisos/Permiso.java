@@ -1,5 +1,8 @@
 package Models.Permisos;
 
-public class Permiso {
+public interface Permiso {
 
+    public String getCabeceraPermiso();
+
+    public boolean menuPermiso();
 }

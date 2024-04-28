@@ -1,9 +1,10 @@
 package Models.Cuentas;
 
+import Models.Roles.Admin;
 import Models.Roles.Rol;
 import Utils.EncoderContrasenyas;
 
-class Usuario {
+public class Usuario {
 
     private String nombre;
     private String apellido;
@@ -16,6 +17,7 @@ class Usuario {
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
+        this.rol = new Admin();
     }
 
     public String getNombre() {

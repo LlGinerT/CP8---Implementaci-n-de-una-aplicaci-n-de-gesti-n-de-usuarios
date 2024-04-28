@@ -1,5 +1,9 @@
 package Models.Roles;
 
+import java.util.ArrayList;
+
+import Models.Permisos.PermisoCuentas;
+
 public class Admin extends Rol {
 
     public Admin() {
@@ -8,7 +12,7 @@ public class Admin extends Rol {
 
     @Override
     protected void permisosIniciales() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'permisosIniciales'");
+        permisos = new ArrayList<>();
+        permisos.add(new PermisoCuentas(true, false));
     }
 }

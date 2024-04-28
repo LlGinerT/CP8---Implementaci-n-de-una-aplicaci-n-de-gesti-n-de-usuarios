@@ -7,7 +7,7 @@ import Models.Permisos.Permiso;
 public abstract class Rol {
 
     private String nombre;
-    private ArrayList<Permiso> permisos;
+    protected ArrayList<Permiso> permisos;
 
     public Rol(String nombre) {
         this.nombre = nombre;

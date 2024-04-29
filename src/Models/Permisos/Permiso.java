@@ -1,7 +1,7 @@
 package Models.Permisos;
 
 import Excepciones.NoPermisoException;
-import Excepciones.OpcionNoDisponible;
+import Excepciones.OpcionNoDisponibleException;
 import Models.Cuentas.GestorCuentas;
 
 public abstract class Permiso {
@@ -43,7 +43,7 @@ public abstract class Permiso {
     public void accesoMenu() {
         try {
             gestor.menu();
-        } catch (NoPermisoException | OpcionNoDisponible e) {
+        } catch (NoPermisoException | OpcionNoDisponibleException | NumberFormatException e) {
             System.out.println(e.getMessage());
             System.out.println("-------------------");
         }

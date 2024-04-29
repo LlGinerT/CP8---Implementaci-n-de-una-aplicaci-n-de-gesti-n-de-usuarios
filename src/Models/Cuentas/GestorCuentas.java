@@ -2,74 +2,170 @@ package Models.Cuentas;
 
 import java.util.ArrayList;
 
+import Excepciones.FormatoEmailException;
 import Excepciones.MaxIntentosException;
 import Excepciones.NoPermisoException;
-import Excepciones.OpcionNoDisponible;
+import Excepciones.OpcionNoDisponibleException;
 import Excepciones.UsuarioNoEncontradoException;
-import Models.GestorInterface;
+import Models.GestorAbstracto;
 import Models.Permisos.Permiso;
 import Utils.EncoderContrasenyas;
 import Utils.Input;
 
-public class GestorCuentas implements GestorInterface<Usuario> {
+public class GestorCuentas extends GestorAbstracto<Usuario> {
 
-    private ArrayList<Usuario> usuariosList;
     private Usuario usuarioActivo;
 
     public GestorCuentas() {
-        this.usuariosList = new ArrayList<>();
+        super("PermisoCuentas");
+        this.lista = new ArrayList<>();
         // usuario test a@a.com | b@b.com pass a.
-        usuariosList.add(new Usuario("a", "a", "a@a.com"));
-        usuariosList.add(new Usuario("b", "a", "b@b.com"));
-        usuariosList.get(0).setContrasenyaCodificada("a");
-        usuariosList.get(1).setContrasenyaCodificada("a");
+        lista.add(new Usuario("a", "a", "a@a.com"));
+        lista.add(new Usuario("b", "a", "b@b.com"));
+        lista.get(0).setContrasenyaCodificada("a");
+        lista.get(1).setContrasenyaCodificada("a");
+    }
+
+    public void delUsuarioActivo() {
+        this.usuarioActivo = null;
     }
 
     @Override
-    public ArrayList<Usuario> getLista() {
-        return usuariosList;
+    protected Boolean tienePermiso() throws NoPermisoException {
+        int contador = 0;
+        while (!permisoLectura && contador < usuarioActivo.getRol().getPermisos().size()) {
+            Permiso permisoUsuario = usuarioActivo.getRol().getPermisos().get(contador);
+            if (permisoUsuario.getClass().getSimpleName().equals(nombrePermiso)) {
+                permisoLectura = true;
+                permisoEscritura = permisoUsuario.getEscritura();
+            } else {
+                throw new NoPermisoException();
+            }
+            contador++;
+        }
+        return permisoLectura;
+    }
+
+    @Override
+    public void menu() throws OpcionNoDisponibleException, NoPermisoException, NumberFormatException {
+        boolean atras = false;
+        boolean permiso = tienePermiso();
+        while (!atras && permiso) {
+            System.out.println("GESTIÓN DE USUARIOS:");
+            System.out.println("-------------------:");
+            if (!permisoEscritura) {
+                System.out.println("1) Mostrar Usuarios");
+                System.out.println("2) Buscar Usuario");
+                System.out.println("3) atras");
+            }
+            if (permisoEscritura) {
+                System.out.println("1) Mostrar Usuarios");
+                System.out.println("2) Buscar Usuario");
+                System.out.println("3) Modificar Usuario");
+                System.out.println("4) Eliminar Usuario");
+                System.out.println("5) atras");
+            }
+            int eleccion = Input.comprobarEntero();
+            switch (eleccion) {
+                case 1:
+                    mostrarUsuarios();
+                    break;
+                case 2:
+                    Usuario tempUsuario;
+                    try {
+                        tempUsuario = buscarUsuario();
+                        System.out.println("-------------------");
+                        System.out.println("Email: " + tempUsuario.getEmail());
+                        System.out.println("Nombre: " + tempUsuario.getNombre());
+                        System.out.println("Apellido: " + tempUsuario.getApellido());
+                        System.out.println("Rol: " + tempUsuario.getRol().getNombre());
+                        System.out.println("-------------------");
+                    } catch (UsuarioNoEncontradoException e) {
+                        System.out.println(e.getMessage());
+                        System.out.println("-------------------");
+                    }
+                    break;
+                case 3:
+                    if (permisoEscritura) {
+                        modificarUsuarios();
+                    } else {
+                        atras = true;
+                    }
+                    break;
+                case 4:
+                    if (permisoEscritura) {
+                        eliminarUsuario();
+                    } else {
+                        throw new OpcionNoDisponibleException();
+                    }
+                case 5:
+                    if (permisoEscritura) {
+                        atras = true;
+                    } else {
+                        throw new OpcionNoDisponibleException();
+                    }
+                    break;
+                default:
+                    throw new OpcionNoDisponibleException();
+
+            }
+
+        }
+
     }
 
     public Usuario getUsuarioActivo() {
         return usuarioActivo;
     }
 
-    public Usuario buscarEmail(String email) {
+    private Usuario buscarEmail() {
         Usuario usuarioEncontrado = null;
-        int contador = 0;
-        while (usuarioEncontrado == null && contador < usuariosList.size()) {
-            if (usuariosList.get(contador).getEmail().equals(email)) {
-                usuarioEncontrado = usuariosList.get(contador);
+        boolean emailValido = false;
+
+        while (!emailValido) {
+            try {
+                String email = Input.validarEmail();
+                // La entrada es un email válido, buscar en la lista de usuarios
+                for (Usuario usuario : lista) {
+                    if (usuario.getEmail().equals(email)) {
+                        usuarioEncontrado = usuario;
+                        emailValido = true;
+                        break;
+                    }
+                }
+                if (usuarioEncontrado == null) {
+                    // El email no se encontró en la lista de usuarios
+                    System.out.println("Email no encontrado. Inténtelo de nuevo.");
+                }
+            } catch (FormatoEmailException e) {
+                // Maneja la excepción cuando se detecta un correo electrónico incorrecto
+                System.out.println(e.getMessage());
             }
-            contador++;
         }
         return usuarioEncontrado;
     }
 
-    public Usuario buscarUsuario() throws UsuarioNoEncontradoException {
+    private Usuario buscarUsuario() throws UsuarioNoEncontradoException, NumberFormatException {
         boolean finBusqueda = false;
         Usuario usuarioEncontrado = null;
         while (!finBusqueda) {
             System.out.println("1) Buscar por Email");
             System.out.println("2) Buscar por Nombre o Apellido");
             System.out.println("3) Atrás");
-            int eleccion = Input.comprobarEntero(Input.scanner());
+            int eleccion = Input.comprobarEntero();
             switch (eleccion) {
                 case 1:
-                    String email = Input.scanner();
-                    usuarioEncontrado = buscarEmail(email);
+                    usuarioEncontrado = buscarEmail();
                     if (usuarioEncontrado == null) {
                         throw new UsuarioNoEncontradoException();
-                    } else {
-                        finBusqueda = true;
                     }
-                    break;
+                    finBusqueda = true;
                 case 2:
                     while (usuarioEncontrado == null) {
                         System.out.println("Introduzca nombre, apellido o ambos;");
                         String nombreApellido = Input.scanner();
                         ArrayList<Usuario> coincidencias = new ArrayList<>();
-                        for (Usuario usuario : usuariosList) {
+                        for (Usuario usuario : lista) {
                             if (nombreApellido.equalsIgnoreCase(usuario.getNombre())
                                     || nombreApellido.equalsIgnoreCase(usuario.getApellido())
                                     || nombreApellido
@@ -81,10 +177,14 @@ public class GestorCuentas implements GestorInterface<Usuario> {
                         }
                         if (coincidencias.size() > 1) {
                             System.out.println("Hay varias coincidencias:");
+                            System.out.println("-------------------");
                             for (Usuario usuario2 : coincidencias) {
-                                System.out.println(usuario2.getNombre() + " " + usuario2.getApellido());
+                                System.out.println("Email: " + usuario2.getEmail());
+                                System.out.println("Nombre: " + usuario2.getNombre());
+                                System.out.println("Apellido: " + usuario2.getApellido());
+                                System.out.println("Rol: " + usuario2.getRol().getNombre());
+                                System.out.println("-------------------");
                             }
-                            System.out.println("---------------------------");
 
                         } else if (coincidencias.size() == 1) {
                             usuarioEncontrado = coincidencias.get(0);
@@ -116,15 +216,16 @@ public class GestorCuentas implements GestorInterface<Usuario> {
 
         while (!sesionIniciada && usuarioValido == null) {
             System.out.println("Introduzca correo electrónico:");
-            String email = Input.validarEmail(Input.scanner());
-
-            if (email != null) {
-                usuarioValido = buscarEmail(email);
-                if (usuarioValido == null) {
-                    throw new UsuarioNoEncontradoException();
-                }
+            usuarioValido = buscarEmail();
+            if (usuarioValido == null) {
+                intentos++;
+                throw new UsuarioNoEncontradoException();
+            } else if (intentos >= 3) {
+                throw new MaxIntentosException();
             }
+
         }
+        intentos = 0;
         while (!sesionIniciada && !contrasenyaValida) {
 
             System.out.println("Introduzca contraseña;");
@@ -165,15 +266,30 @@ public class GestorCuentas implements GestorInterface<Usuario> {
         System.out.println("--------------");
         while (!atras && nombre == null) {
             System.out.println("Introduzca el nombre:");
-            nombre = Input.comprobarSoloLetras(Input.scanner());
+            nombre = Input.comprobarSoloLetras();
         }
         while (!atras && apellido == null) {
             System.out.println("Introduzca el apellido:");
-            apellido = Input.comprobarSoloLetras(Input.scanner());
+            apellido = Input.comprobarSoloLetras();
         }
         while (!atras && email == null) {
             System.out.println("Introduzca el correo electrónico:");
-            email = Input.validarEmail(Input.scanner());
+            try {
+                email = Input.validarEmail();
+            } catch (FormatoEmailException e) {
+                System.out.println(e.getMessage());
+            }
+            for (Usuario usuario : lista) {
+                if (email != null && !usuario.getEmail().contains(email)) {
+                    intentos++;
+                    if (intentos >= 3) {
+                        throw new MaxIntentosException();
+                    } else {
+                        System.out.println("Ya existe una cuenta con ese correo electrónico");
+                        email = null;
+                    }
+                }
+            }
         }
         tempCuenta = new Usuario(nombre, apellido, email);
         while (!atras && contrasenya == null) {
@@ -186,7 +302,7 @@ public class GestorCuentas implements GestorInterface<Usuario> {
                 contrasenya = null;
                 repetirContrasenya = null;
                 System.out.println("Cuenta creada correctamente.");
-                usuariosList.add(tempCuenta);
+                lista.add(tempCuenta);
                 atras = true;
             } else {
                 intentos++;
@@ -200,9 +316,9 @@ public class GestorCuentas implements GestorInterface<Usuario> {
         }
     }
 
-    public void mostrarUsuarios() {
+    private void mostrarUsuarios() {
         System.out.println("-------------------");
-        for (Usuario usuario : usuariosList) {
+        for (Usuario usuario : lista) {
             System.out.println("Email: " + usuario.getEmail());
             System.out.println("Nombre: " + usuario.getNombre());
             System.out.println("Apellido: " + usuario.getApellido());
@@ -211,107 +327,27 @@ public class GestorCuentas implements GestorInterface<Usuario> {
         }
     }
 
-    @Override
-    public void menu() throws NoPermisoException, OpcionNoDisponible {
+    private void modificarUsuarios() throws OpcionNoDisponibleException, NumberFormatException {
         boolean atras = false;
-        boolean permiso = false;
-        boolean permisoEscritura = false;
-        int contador = 0;
-        while (!permiso && contador < usuarioActivo.getRol().getPermisos().size()) {
-            Permiso permisoUsuario = usuarioActivo.getRol().getPermisos().get(contador);
-            if (permisoUsuario.getClass().getSimpleName().equals("PermisoCuentas")) {
-                permiso = true;
-                permisoEscritura = permisoUsuario.getEscritura();
-            } else {
-                throw new NoPermisoException();
+        Usuario tempUsuario = null;
+        mostrarUsuarios();
+        System.out.println("Elige un usuario:");
+        while (tempUsuario == null) {
+            try {
+                tempUsuario = buscarUsuario();
+                System.out.println("-------------------");
+                System.out.println("Email: " + tempUsuario.getEmail());
+                System.out.println("Nombre: " + tempUsuario.getNombre());
+                System.out.println("Apellido: " + tempUsuario.getApellido());
+                System.out.println("Rol: " + tempUsuario.getRol().getNombre());
+                System.out.println("-------------------");
+            } catch (UsuarioNoEncontradoException e) {
+                System.out.println(e.getMessage());
             }
-            contador++;
         }
-        while (!atras && permiso) {
-            System.out.println("GESTIÓN DE USUARIOS:");
-            System.out.println("-------------------:");
-            if (!permisoEscritura) {
-                System.out.println("1) Mostrar Usuarios");
-                System.out.println("2) Buscar Usuario");
-                System.out.println("3) atras");
-            }
-            if (permisoEscritura) {
-                System.out.println("1) Mostrar Usuarios");
-                System.out.println("2) Buscar Usuario");
-                System.out.println("3) Modificar Usuario");
-                System.out.println("4) Eliminar Usuario");
-                System.out.println("5) atras");
-            }
-            int eleccion = Input.comprobarEntero(Input.scanner());
-            switch (eleccion) {
-                case 1:
-                    mostrarUsuarios();
-                    break;
-                case 2:
-                    Usuario tempUsuario;
-                    try {
-                        tempUsuario = buscarUsuario();
-                        System.out.println("-------------------");
-                        System.out.println("Email: " + tempUsuario.getEmail());
-                        System.out.println("Nombre: " + tempUsuario.getNombre());
-                        System.out.println("Apellido: " + tempUsuario.getApellido());
-                        System.out.println("Rol: " + tempUsuario.getRol().getNombre());
-                        System.out.println("-------------------");
-                    } catch (UsuarioNoEncontradoException e) {
-                        System.out.println(e.getMessage());
-                        System.out.println("-------------------");
-                    }
-                    break;
-                case 3:
-                    if (permisoEscritura) {
-                        mostrarUsuarios();
-                        System.out.println("Elige un usuario:");
-
-                        try {
-                            tempUsuario = buscarUsuario();
-                            System.out.println("-------------------");
-                            System.out.println("Email: " + tempUsuario.getEmail());
-                            System.out.println("Nombre: " + tempUsuario.getNombre());
-                            System.out.println("Apellido: " + tempUsuario.getApellido());
-                            System.out.println("Rol: " + tempUsuario.getRol().getNombre());
-                            System.out.println("-------------------");
-                            modificarUsuarios(tempUsuario);
-                        } catch (UsuarioNoEncontradoException | OpcionNoDisponible e) {
-                            System.out.println(e);
-                        }
-                    } else {
-                        atras = true;
-                    }
-                    break;
-                case 4:
-                    if (permisoEscritura) {
-
-                    } else {
-                        throw new OpcionNoDisponible();
-                    }
-                    break;
-                case 5:
-                    if (permisoEscritura) {
-                        atras = true;
-                    } else {
-                        throw new OpcionNoDisponible();
-                    }
-                    break;
-                default:
-                    throw new OpcionNoDisponible();
-
-            }
-
-        }
-
-    }
-
-    public void modificarUsuarios(Usuario usuario) throws OpcionNoDisponible {
-        boolean atras = false;
-
         System.out.println("-------------------");
         System.out.println("MODIFICAR USUARIO: ");
-        System.out.println(usuario.getEmail());
+        System.out.println(tempUsuario.getEmail());
         System.out.println("-------------------");
         while (!atras) {
             System.out.println("1) Cambiar nombre");
@@ -320,30 +356,76 @@ public class GestorCuentas implements GestorInterface<Usuario> {
             System.out.println("4) Cambiar contraseña");
             System.out.println("5) Atrás");
 
-            int eleccion = Input.comprobarEntero(Input.scanner());
+            int eleccion = Input.comprobarEntero();
             switch (eleccion) {
                 case 1:
-                    usuario.setNombre(Input.comprobarSoloLetras(Input.scanner()));
+                    tempUsuario.setNombre(Input.comprobarSoloLetras());
                     break;
                 case 2:
-                    usuario.setApellido(Input.comprobarSoloLetras(Input.scanner()));
+                    tempUsuario.setApellido(Input.comprobarSoloLetras());
                     break;
                 case 3:
-                    usuario.setEmail(Input.comprobarSoloLetras(Input.scanner()));
+                    tempUsuario.setEmail(Input.comprobarSoloLetras());
                     break;
                 case 4:
                     System.out.println("Contraseña reiniciada");
                     System.out
                             .println("Se ha enviado un correo para crear una nueva contraseña a " + '"'
-                                    + usuario.getEmail() + '"');
-                    usuario.reiniciarContrasenya();
+                                    + tempUsuario.getEmail() + '"');
+                    tempUsuario.reiniciarContrasenya();
                     break;
                 case 5:
                     atras = true;
                     break;
                 default:
-                    throw new OpcionNoDisponible();
+                    throw new OpcionNoDisponibleException();
             }
+        }
+    }
+
+    private void eliminarUsuario() throws NumberFormatException {
+        mostrarUsuarios();
+        System.out.println("Elige un usuario:");
+
+        try {
+            while (true) {
+                Usuario tempUsuario;
+                tempUsuario = buscarUsuario();
+                if (!tempUsuario.equals(usuarioActivo)) {
+                    System.out.println("-------------------");
+                    System.out.println("Email: " + tempUsuario.getEmail());
+                    System.out.println("Nombre: " + tempUsuario.getNombre());
+                    System.out.println("Apellido: " + tempUsuario.getApellido());
+                    System.out.println("Rol: " + tempUsuario.getRol().getNombre());
+                    System.out.println("-------------------");
+                    System.out.println("¿Estas seguro de querer eliminar este usuario?(S/N)");
+                    String continuar = Input.comprobarSoloLetras();
+                    if (continuar.equalsIgnoreCase("s")) {
+                        lista.remove(tempUsuario);
+                        break;
+                    } else if (continuar.equalsIgnoreCase("n")) {
+                        break;
+                    } else {
+                        System.out.println(continuar
+                                + " no es una respuesta valida. Vuelva a introducir una respuesta.");
+                    }
+                } else {
+                    System.out.println("¿Seguro que quieres borrar tu cuenta?(S/N)");
+                    String continuar = Input.comprobarSoloLetras();
+                    if (continuar.equalsIgnoreCase("s")) {
+                        usuarioActivo = null;
+                        lista.remove(tempUsuario);
+                        break;
+                    } else if (continuar.equalsIgnoreCase("n")) {
+                        break;
+                    } else {
+                        System.out.println(continuar
+                                + " no es una respuesta valida. Vuelva a introducir una respuesta.");
+                    }
+                }
+            }
+        } catch (UsuarioNoEncontradoException e) {
+            System.out.println(e.getMessage());
         }
     }
 }

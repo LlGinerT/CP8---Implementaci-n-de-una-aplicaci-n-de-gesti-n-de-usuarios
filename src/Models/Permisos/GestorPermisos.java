@@ -8,8 +8,10 @@ import Models.GestorAbstracto;
 
 public class GestorPermisos extends GestorAbstracto<Permiso> {
 
-    protected GestorPermisos() {
-        super("PermisoRoles");
+    public GestorPermisos() {
+        super("PermisoPermisos");
+        this.lista = new ArrayList<Permiso>();
+        lista.add(new PermisoCuentas(false));
     }
 
     @Override

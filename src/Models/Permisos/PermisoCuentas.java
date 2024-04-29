@@ -2,9 +2,10 @@ package Models.Permisos;
 
 public class PermisoCuentas extends Permiso {
 
-    public PermisoCuentas(boolean lectura, boolean escritura) {
-        super(lectura, escritura);
-        this.cabeceraAcceso = ") Gestion de cuentas";
+    public PermisoCuentas(boolean escritura) {
+        super(escritura);
+        this.nombreMenu = "Gestión de cuentas";
+        this.nombre = "Cuentas";
     }
 
 }

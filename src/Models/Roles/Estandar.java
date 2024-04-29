@@ -1,5 +1,7 @@
 package Models.Roles;
 
+import Models.Permisos.PermisoCuentas;
+
 public class Estandar extends Rol {
 
     public Estandar() {
@@ -9,8 +11,7 @@ public class Estandar extends Rol {
 
     @Override
     protected void permisosIniciales() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'permisosIniciales'");
+        permisos.add(new PermisoCuentas(false));
     }
 
 }

@@ -1,5 +1,7 @@
 package Models.Roles;
 
+import Models.Permisos.PermisoCuentas;
+
 public class Privilegiado extends Rol {
 
     public Privilegiado() {
@@ -8,7 +10,6 @@ public class Privilegiado extends Rol {
 
     @Override
     protected void permisosIniciales() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'permisosIniciales'");
+        permisos.add(new PermisoCuentas(false));
     }
 }

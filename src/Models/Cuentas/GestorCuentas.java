@@ -33,17 +33,17 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
     @Override
     protected Boolean tienePermiso() throws NoPermisoException {
         int contador = 0;
-        while (!permisoLectura && contador < usuarioActivo.getRol().getPermisos().size()) {
+        while (!permiso && contador < usuarioActivo.getRol().getPermisos().size()) {
             Permiso permisoUsuario = usuarioActivo.getRol().getPermisos().get(contador);
             if (permisoUsuario.getClass().getSimpleName().equals(nombrePermiso)) {
-                permisoLectura = true;
+                permiso = true;
                 permisoEscritura = permisoUsuario.getEscritura();
             } else {
                 throw new NoPermisoException();
             }
             contador++;
         }
-        return permisoLectura;
+        return permiso;
     }
 
     @Override
@@ -52,13 +52,14 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
         boolean permiso = tienePermiso();
         while (!atras && permiso) {
             System.out.println("GESTIÓN DE USUARIOS:");
-            System.out.println("-------------------:");
             if (!permisoEscritura) {
+                System.out.println("-------------------:");
                 System.out.println("1) Mostrar Usuarios");
                 System.out.println("2) Buscar Usuario");
                 System.out.println("3) atras");
             }
             if (permisoEscritura) {
+                System.out.println("-------------------:");
                 System.out.println("1) Mostrar Usuarios");
                 System.out.println("2) Buscar Usuario");
                 System.out.println("3) Modificar Usuario");
@@ -280,7 +281,7 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
                 System.out.println(e.getMessage());
             }
             for (Usuario usuario : lista) {
-                if (email != null && !usuario.getEmail().contains(email)) {
+                if (email != null && usuario.getEmail().contains(email)) {
                     intentos++;
                     if (intentos >= 3) {
                         throw new MaxIntentosException();

@@ -11,6 +11,7 @@ public abstract class Rol {
 
     public Rol(String nombre) {
         this.nombre = nombre;
+        this.permisos = new ArrayList<>();
         permisosIniciales();
     }
 

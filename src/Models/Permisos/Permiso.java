@@ -2,26 +2,18 @@ package Models.Permisos;
 
 import Excepciones.NoPermisoException;
 import Excepciones.OpcionNoDisponibleException;
-import Models.Cuentas.GestorCuentas;
+import Models.GestorAbstracto;
 
 public abstract class Permiso {
-    protected String cabeceraAcceso;
-    protected boolean lectura;
+    protected String nombreMenu;
+    protected String nombre;
     protected boolean escritura;
-    protected GestorCuentas gestor;
+    @SuppressWarnings("rawtypes")
+    protected GestorAbstracto gestor;
 
-    public Permiso(boolean lectura, boolean escritura) {
-        this.lectura = lectura;
+    public Permiso(boolean escritura) {
         this.escritura = escritura;
 
-    }
-
-    public boolean getLectura() {
-        return lectura;
-    }
-
-    public void setLectura(boolean lectura) {
-        this.lectura = lectura;
     }
 
     public boolean getEscritura() {
@@ -32,11 +24,16 @@ public abstract class Permiso {
         this.escritura = escritura;
     }
 
-    public String getCabeceraAcceso() {
-        return cabeceraAcceso;
+    public String getNombre() {
+        return nombre;
     }
 
-    public void setGestor(GestorCuentas gestor) {
+    public String getNombreMenu() {
+        return nombreMenu;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public void setGestor(GestorAbstracto gestor) {
         this.gestor = gestor;
     }
 

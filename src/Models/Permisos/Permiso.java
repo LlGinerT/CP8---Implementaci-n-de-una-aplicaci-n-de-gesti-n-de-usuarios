@@ -1,5 +1,7 @@
 package Models.Permisos;
 
+import Excepciones.NoPermisoException;
+import Excepciones.OpcionNoDisponible;
 import Models.Cuentas.GestorCuentas;
 
 public abstract class Permiso {
@@ -38,5 +40,12 @@ public abstract class Permiso {
         this.gestor = gestor;
     }
 
-    public abstract void accesoMenu();
+    public void accesoMenu() {
+        try {
+            gestor.menu();
+        } catch (NoPermisoException | OpcionNoDisponible e) {
+            System.out.println(e.getMessage());
+            System.out.println("-------------------");
+        }
+    }
 }

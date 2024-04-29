@@ -19,11 +19,17 @@ public class App {
                 try {
                     menuInicial();
                 } catch (OpcionNoDisponible e) {
-                    System.out.println(e + ": Elija una opción valida");
+                    System.out.println(e.getMessage() + ": Elija una opción valida");
+                    System.out.println("-----------------------------------------");
                 }
             }
             while (!fin && sesionIniciada) {
-                menuPrincipal();
+                try {
+                    menuPrincipal();
+                } catch (OpcionNoDisponible e) {
+                    System.out.println(e.getMessage() + ": Elija una opción valida");
+                    System.out.println("-----------------------------------------");
+                }
             }
         }
     }
@@ -42,6 +48,7 @@ public class App {
                     sesionIniciada = gestor.inicioSesion();
                 } catch (MaxIntentosException | UsuarioNoEncontradoException e) {
                     System.out.println("Error al iniciar sesión: " + e.getMessage());
+                    System.out.println("---------------------------------------");
                 }
                 break;
 
@@ -50,6 +57,7 @@ public class App {
                     gestor.crearCuenta();
                 } catch (MaxIntentosException e) {
                     System.out.println("Error al crear cuenta: " + e.getMessage());
+                    System.out.println("---------------------------------------");
                 }
                 break;
 
@@ -88,4 +96,10 @@ public class App {
     }
 
 }
-// Solucionar excepcion cambiar contraseña salta opcionNoDisponible
+/*
+ * [] Gestion Permisos y roles
+ * [] Archivos
+ * [] acabar permisos
+ * [] no pueden haber 2 mails iguales quizas excepcion
+ * [] excepcion path Opcion no disponible
+ */

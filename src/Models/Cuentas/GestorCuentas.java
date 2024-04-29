@@ -3,23 +3,30 @@ package Models.Cuentas;
 import java.util.ArrayList;
 
 import Excepciones.MaxIntentosException;
-import Excepciones.NoPersmisoException;
+import Excepciones.NoPermisoException;
 import Excepciones.OpcionNoDisponible;
 import Excepciones.UsuarioNoEncontradoException;
+import Models.GestorInterface;
 import Models.Permisos.Permiso;
 import Utils.EncoderContrasenyas;
 import Utils.Input;
 
-public class GestorCuentas {
+public class GestorCuentas implements GestorInterface<Usuario> {
 
     private ArrayList<Usuario> usuariosList;
     private Usuario usuarioActivo;
 
     public GestorCuentas() {
         this.usuariosList = new ArrayList<>();
+        // usuario test a@a.com | b@b.com pass a.
+        usuariosList.add(new Usuario("a", "a", "a@a.com"));
+        usuariosList.add(new Usuario("b", "a", "b@b.com"));
+        usuariosList.get(0).setContrasenyaCodificada("a");
+        usuariosList.get(1).setContrasenyaCodificada("a");
     }
 
-    public ArrayList<Usuario> getUsuariosList() {
+    @Override
+    public ArrayList<Usuario> getLista() {
         return usuariosList;
     }
 
@@ -204,7 +211,8 @@ public class GestorCuentas {
         }
     }
 
-    public void menuUsuarios() throws NoPersmisoException, UsuarioNoEncontradoException {
+    @Override
+    public void menu() throws NoPermisoException, OpcionNoDisponible {
         boolean atras = false;
         boolean permiso = false;
         boolean permisoEscritura = false;
@@ -215,7 +223,7 @@ public class GestorCuentas {
                 permiso = true;
                 permisoEscritura = permisoUsuario.getEscritura();
             } else {
-                throw new NoPersmisoException();
+                throw new NoPermisoException();
             }
             contador++;
         }
@@ -250,7 +258,8 @@ public class GestorCuentas {
                         System.out.println("Rol: " + tempUsuario.getRol().getNombre());
                         System.out.println("-------------------");
                     } catch (UsuarioNoEncontradoException e) {
-                        System.out.println(e);
+                        System.out.println(e.getMessage());
+                        System.out.println("-------------------");
                     }
                     break;
                 case 3:
@@ -278,19 +287,19 @@ public class GestorCuentas {
                     if (permisoEscritura) {
 
                     } else {
-                        System.out.println("Opción no disponible");
+                        throw new OpcionNoDisponible();
                     }
                     break;
                 case 5:
                     if (permisoEscritura) {
                         atras = true;
                     } else {
-                        System.out.println("Opción no disponible");
+                        throw new OpcionNoDisponible();
                     }
                     break;
                 default:
-                    System.out.println("Opción no disponible");
-                    break;
+                    throw new OpcionNoDisponible();
+
             }
 
         }
@@ -328,6 +337,10 @@ public class GestorCuentas {
                             .println("Se ha enviado un correo para crear una nueva contraseña a " + '"'
                                     + usuario.getEmail() + '"');
                     usuario.reiniciarContrasenya();
+                    break;
+                case 5:
+                    atras = true;
+                    break;
                 default:
                     throw new OpcionNoDisponible();
             }

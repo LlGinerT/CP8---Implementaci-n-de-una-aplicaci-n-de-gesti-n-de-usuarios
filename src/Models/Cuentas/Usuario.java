@@ -19,6 +19,13 @@ public class Usuario {
 
     }
 
+    public Usuario(String nombre, String apellido, String email, Rol rol) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
+        this.rol = rol;
+    }
+
     public String getNombre() {
         return nombre;
     }

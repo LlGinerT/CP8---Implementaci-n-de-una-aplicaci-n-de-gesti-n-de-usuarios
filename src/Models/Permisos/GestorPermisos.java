@@ -8,10 +8,6 @@ import Utils.Input;
 
 public class GestorPermisos extends GestorAbstracto<Permiso> {
 
-    public GestorPermisos() {
-        super("PermisoPermisos");
-    }
-
     @Override
     public void menu() throws OpcionNoDisponibleException, NoPermisoException, NumberFormatException {
         // Sobrescribimos el método abstracto menu() de la superclase

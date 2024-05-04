@@ -1,9 +1,11 @@
 package Models.Roles;
 
+import Models.Cuentas.GestorCuentas;
+
 public class NuevoRol extends Rol {
 
-    public NuevoRol(String nombre) {
-        super(nombre, false);
+    public NuevoRol(String nombre, GestorCuentas gestorCuentas, GestorRoles gestorRoles) {
+        super(nombre, false, gestorCuentas, gestorRoles);
         // TODO Auto-generated constructor stub
     }
 

@@ -1,6 +1,6 @@
 package Models.Roles;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import Excepciones.NoPermisoException;
 import Excepciones.OpcionNoDisponibleException;
@@ -9,18 +9,19 @@ import Models.Cuentas.GestorCuentas;
 import Models.Cuentas.Usuario;
 import Models.Permisos.GestorPermisos;
 import Models.Permisos.Permiso;
+import Models.Permisos.PermisoCuentas;
 import Utils.Input;
 
 public class GestorRoles extends GestorAbstracto<Rol> {
 
     public GestorRoles(GestorCuentas gestorCuentas) {
-        super("PermisoRoles");
+        super(new PermisoCuentas());
         this.gestorCuentas = gestorCuentas;
         this.gestorPermisos = new GestorPermisos();
-        lista = new ArrayList<>();
-        lista.add(new Admin());
-        lista.add(new Privilegiado());
-        lista.add(new Regular());
+        lista = new HashSet<>();
+        lista.add(new Admin(gestorCuentas, this));
+        lista.add(new Privilegiado(gestorCuentas, this));
+        lista.add(new Regular(gestorCuentas, this));
     }
 
     @Override
@@ -141,16 +142,21 @@ public class GestorRoles extends GestorAbstracto<Rol> {
     }
 
     public Rol buscarRol(String nombreRol) {
-        Rol rolEncontrado = null;
-        int contador = 0;
-        while (rolEncontrado == null && contador < lista.size()) {
-            Rol compararRol = lista.get(contador);
-            if (compararRol.getNombre().equalsIgnoreCase(nombreRol)) {
-                rolEncontrado = compararRol;
+        for (Rol rol : lista) {
+            if (rol.getNombre().equalsIgnoreCase(nombreRol)) {
+                return rol;
             }
-            contador++;
         }
-        return rolEncontrado;
+        return null; // Si el rol no se encuentra
+    }
+
+    public Rol buscarRol(Class<?> tipo) {
+        for (Rol rol : lista) {
+            if (rol.getClass().equals(tipo)) {
+                return rol;
+            }
+        }
+        return null; // Si el rol no se encuentra
     }
 
     public void eliminarRol() {

@@ -1,5 +1,7 @@
 package Models.Permisos;
 
+import java.util.Objects;
+
 import Excepciones.NoPermisoException;
 import Excepciones.OpcionNoDisponibleException;
 import Models.GestorAbstracto;
@@ -16,6 +18,10 @@ public abstract class Permiso {
     public Permiso(boolean lectura, boolean escritura) {
         this.lectura = lectura;
         this.escritura = escritura;
+    }
+
+    public Permiso() {
+
     }
 
     public boolean getBasico() {
@@ -59,4 +65,22 @@ public abstract class Permiso {
             System.out.println("-------------------");
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Permiso other = (Permiso) obj;
+        return this.getClass().getSimpleName().equals(other.getClass().getSimpleName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getClass().getSimpleName());
+    }
+
 }

@@ -84,7 +84,7 @@ public class App {
             if (permisoActivo.getLectura()) {
                 System.out.println((i + 1) + ") " + permisoActivo.getNombreMenu());
                 for (GestorAbstracto gestor : gestores) {
-                    if (permisoActivo.getClass().getSimpleName().equals(gestor.getNombrePermiso())) {
+                    if (permisoActivo.getClass().equals(gestor.getPermisoNecesario())) {
                         permisosUsuarioActivo[i].setGestor(gestor);
                     }
                 }

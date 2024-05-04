@@ -1,6 +1,6 @@
 package Models;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import Excepciones.NoPermisoException;
 import Excepciones.OpcionNoDisponibleException;
@@ -12,23 +12,26 @@ public abstract class GestorAbstracto<T> {
 
     protected boolean permisoLectura;
     protected boolean permisoEscritura;
-    protected String nombrePermiso;
+    protected Permiso permisoNecesario;
     protected GestorCuentas gestorCuentas;
     protected GestorPermisos gestorPermisos;
-    protected ArrayList<T> lista;
+    protected HashSet<T> lista;
 
-    protected GestorAbstracto(String nombrePermiso) {
+    protected GestorAbstracto() {
 
-        this.nombrePermiso = nombrePermiso;
-        this.lista = new ArrayList<T>();
     }
 
-    public ArrayList<T> getLista() {
+    protected GestorAbstracto(Permiso permiso) {
+        this.permisoNecesario = permiso;
+        this.lista = new HashSet<T>();
+    }
+
+    public HashSet<T> getLista() {
         return lista;
     }
 
-    public String getNombrePermiso() {
-        return nombrePermiso;
+    public Permiso getPermisoNecesario() {
+        return permisoNecesario;
     }
 
     public abstract void menu() throws OpcionNoDisponibleException, NoPermisoException, NumberFormatException;
@@ -37,7 +40,7 @@ public abstract class GestorAbstracto<T> {
         int contador = 0;
         while (!permisoLectura && contador < gestorCuentas.getUsuarioActivo().getRol().getPermisos().length) {
             Permiso permisoUsuario = gestorCuentas.getUsuarioActivo().getRol().getPermisos()[contador];
-            if (permisoUsuario.getClass().getSimpleName().equals(nombrePermiso)) {
+            if (permisoUsuario.getClass().getSimpleName().equals(permisoNecesario)) {
                 permisoLectura = true;
                 permisoEscritura = permisoUsuario.getEscritura();
             }

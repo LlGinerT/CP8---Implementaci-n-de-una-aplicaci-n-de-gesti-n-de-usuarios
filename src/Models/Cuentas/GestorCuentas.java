@@ -1,6 +1,7 @@
 package Models.Cuentas;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import Excepciones.FormatoEmailException;
 import Excepciones.MaxIntentosException;
@@ -9,7 +10,10 @@ import Excepciones.OpcionNoDisponibleException;
 import Excepciones.UsuarioNoEncontradoException;
 import Models.GestorAbstracto;
 import Models.Permisos.Permiso;
+import Models.Permisos.PermisoCuentas;
+import Models.Roles.Admin;
 import Models.Roles.GestorRoles;
+import Models.Roles.Regular;
 import Utils.EncoderContrasenyas;
 import Utils.Input;
 
@@ -19,16 +23,13 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
     private Usuario usuarioActivo;
 
     public GestorCuentas() {
-        super("PermisoCuentas");
-        this.lista = new ArrayList<>();
+        super(new PermisoCuentas());
+        this.lista = new HashSet<>();
         this.gestorRoles = new GestorRoles(this);
         // usuario test a@a.com | b@b.com pass a.
-        lista.add(new Usuario("a", "a", "a@a.com"));
-        lista.add(new Usuario("b", "a", "b@b.com"));
-        lista.get(0).setContrasenyaCodificada("a");
-        lista.get(0).setRol(gestorRoles.getLista().get(0));
-        lista.get(1).setContrasenyaCodificada("a");
-        lista.get(1).setRol(gestorRoles.getLista().get(2));
+        lista.add(new Usuario("a", "a", "a@a.com", gestorRoles.buscarRol(Admin.class)));
+        lista.add(new Usuario("b", "a", "b@b.com", gestorRoles.buscarRol(Regular.class)));
+
     }
 
     public GestorRoles getGestorRoles() {
@@ -231,7 +232,7 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
         int contador = 0;
         while (!permisoLectura && contador < usuarioActivo.getRol().getPermisos().length) {
             Permiso permisoUsuario = usuarioActivo.getRol().getPermisos()[contador];
-            if (permisoUsuario.getClass().getSimpleName().equals(nombrePermiso)) {
+            if (permisoUsuario.getClass().equals(permisoNecesario)) {
                 permisoLectura = true;
                 permisoEscritura = permisoUsuario.getEscritura();
             } else {
@@ -244,28 +245,22 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
 
     private Usuario buscarEmail() {
         Usuario usuarioEncontrado = null;
-        boolean emailValido = false;
 
-        while (!emailValido) {
+        while (usuarioEncontrado == null) {
             try {
                 String email = Input.validarEmail();
-                // La entrada es un email válido, buscar en la lista de usuarios
-                for (Usuario usuario : lista) {
-                    if (usuario.getEmail().equals(email)) {
-                        usuarioEncontrado = usuario;
-                        emailValido = true;
-                        break;
-                    }
-                }
+                usuarioEncontrado = lista.stream()
+                        .filter(usuario -> usuario.getEmail().equals(email))
+                        .findFirst()
+                        .orElse(null);
                 if (usuarioEncontrado == null) {
-                    // El email no se encontró en la lista de usuarios
                     System.out.println("Email no encontrado. Inténtelo de nuevo.");
                 }
             } catch (FormatoEmailException e) {
-                // Maneja la excepción cuando se detecta un correo electrónico incorrecto
                 System.out.println(e.getMessage());
             }
         }
+
         return usuarioEncontrado;
     }
 

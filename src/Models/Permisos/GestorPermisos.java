@@ -32,10 +32,13 @@ public class GestorPermisos extends GestorAbstracto<Permiso> {
             System.out.println("---------------------------------------");
         }
         System.out.println("¿Que permiso quieres modificar?");
+        System.out.println("---------------------------------------");
         while (!atras) {
-            System.out.println("1) PermisoCuentas");
-            System.out.println("2) PermisoRoles");
-            System.out.println("3) Atrás");
+            for (int i = 0; i < rol.getPermisos().length; i++) {
+                System.out.println((i + 1) + ") " + rol.getPermisos()[i]);
+            }
+            int indiceSalidas = rol.getPermisos().length;
+            System.out.println((indiceSalidas + 1) + ") Atrás");
             System.out.println("---------------------------------------");
             int eleccion = Input.comprobarEntero();
             switch (eleccion) {
@@ -74,23 +77,31 @@ public class GestorPermisos extends GestorAbstracto<Permiso> {
             System.out.println("1) Modificar permiso de lectura");
             System.out.println("2) Modificar permiso de escritura");
             System.out.println("3) Atrás");
+            System.out.println("------------------");
             int eleccion = Input.comprobarEntero();
+            System.out.println("------------------");
             switch (eleccion) {
                 case 1:
                     if (!permiso.getBasico()) {
                         if (permiso.getLectura()) {
                             System.out.println("Quitar permiso de Lectura?(S/N)");
+                            System.out.println("------------------");
                             String continuar = Input.comprobarSoloLetras();
                             if (continuar.equalsIgnoreCase("s")) {
                                 permiso.setLectura(false);
+                                System.out.println("------------------");
                                 System.out.println("Se ha quitado el permiso de lectura correctamente");
+                                System.out.println("------------------");
                                 atras = true;
                             } else if (continuar.equalsIgnoreCase("n")) {
+                                System.out.println("------------------");
                                 atras = true;
                                 break;
                             } else {
-                                System.out.println(continuar
-                                        + " no es una respuesta valida. Vuelva a introducir una respuesta.");
+                                System.out.println("------------------");
+
+                                System.out.println(" No es una respuesta valida. Vuelva a introducir una respuesta.");
+                                System.out.println("------------------");
                             }
                         } else {
                             System.out.println("Añadir permiso de lectura en (S/N)");
@@ -98,48 +109,61 @@ public class GestorPermisos extends GestorAbstracto<Permiso> {
                             if (continuar.equalsIgnoreCase("S")) {
                                 permiso.setLectura(true);
                                 atras = true;
+                                System.out.println("------------------");
                                 System.out.println("Se ha añadido el permiso de escritura correctamente");
+                                System.out.println("------------------");
                             } else if (continuar.equalsIgnoreCase("n")) {
                                 atras = true;
                                 break;
                             } else {
-                                System.out.println(continuar
-                                        + " no es una respuesta valida. Vuelva a introducir una respuesta.");
+                                System.out.println("------------------");
+                                System.out.println(" No es una respuesta valida. Vuelva a introducir una respuesta.");
+                                System.out.println("------------------");
                             }
                         }
                     } else {
+                        System.out.println("------------------");
                         System.out.println("Esto es un permiso básico, no se puede modificar.");
+                        System.out.println("------------------");
                     }
                     break;
 
                 case 2:
                     if (permiso.getEscritura()) {
                         System.out.println("Quitar permiso de escritura?(S/N)");
+                        System.out.println("------------------");
                         String continuar = Input.comprobarSoloLetras();
                         if (continuar.equalsIgnoreCase("s")) {
                             permiso.setEscritura(false);
-                            System.out.println("Se ha quitado el permiso de lectura correctamente");
+                            System.out.println("------------------");
+                            System.out.println("Se ha quitado el permiso de escritura correctamente");
+                            System.out.println("------------------");
                             atras = true;
                         } else if (continuar.equalsIgnoreCase("n")) {
                             atras = true;
                             break;
                         } else {
-                            System.out.println(continuar
-                                    + " no es una respuesta valida. Vuelva a introducir una respuesta.");
+                            System.out.println("------------------");
+                            System.out.println(" No es una respuesta valida. Vuelva a introducir una respuesta.");
+                            System.out.println("------------------");
                         }
                     } else {
                         System.out.println("Añadir permiso de escritura en (S/N)");
+                        System.out.println("------------------");
                         String continuar = Input.comprobarSoloLetras();
                         if (continuar.equalsIgnoreCase("S")) {
-                            permiso.setLectura(true);
+                            permiso.setEscritura(true);
                             atras = true;
+                            System.out.println("------------------");
                             System.out.println("Se ha añadido el permiso de escritura correctamente");
+                            System.out.println("------------------");
                         } else if (continuar.equalsIgnoreCase("n")) {
                             atras = true;
                             break;
                         } else {
-                            System.out.println(continuar
-                                    + " no es una respuesta valida. Vuelva a introducir una respuesta.");
+                            System.out.println("------------------");
+                            System.out.println(" No es una respuesta valida. Vuelva a introducir una respuesta.");
+                            System.out.println("------------------");
                         }
                     }
                     break;

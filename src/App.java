@@ -11,9 +11,8 @@ public class App {
 
     static boolean fin = false;
     static GestorCuentas gestorCuentas = new GestorCuentas();
-    static GestorAbstracto[] gestores = { gestorCuentas, gestorCuentas.getGestorRoles() };
-
     @SuppressWarnings("rawtypes")
+    static GestorAbstracto[] gestores = { gestorCuentas, gestorCuentas.getGestorRoles() };
 
     public static void main(String[] args) throws Exception {
         System.out.println("BIENVENIDO");
@@ -76,7 +75,9 @@ public class App {
 
     @SuppressWarnings("rawtypes")
     private static void menuPrincipal() throws OpcionNoDisponibleException, NumberFormatException {
+        System.out.println("------------------");
         System.out.println("MENU PRINCIPAL");
+        System.out.println("------------------");
         Permiso[] permisosUsuarioActivo = gestorCuentas.getUsuarioActivo().getRol().getPermisos();
         for (int i = 0; i < permisosUsuarioActivo.length; i++) {
             Permiso permisoActivo = permisosUsuarioActivo[i];
@@ -89,17 +90,21 @@ public class App {
                 }
             }
         }
-        int Acceso = permisosUsuarioActivo.length;
-        System.out.println((Acceso + 1) + ") Cerrar sesión");
-        System.out.println((Acceso + 2) + ") Salir");
-
+        int indiceSalidas = permisosUsuarioActivo.length;
+        System.out.println((indiceSalidas + 1) + ") Cerrar sesión");
+        System.out.println((indiceSalidas + 2) + ") Salir");
+        System.out.println("------------------");
         int eleccion = (Input.comprobarEntero());
+        System.out.println("------------------");
 
         if (eleccion >= 1 && eleccion <= permisosUsuarioActivo.length) {
             permisosUsuarioActivo[(eleccion - 1)].accesoMenu();
-        } else if (eleccion == Acceso + 1) {
+        } else if (eleccion == indiceSalidas + 1) {
+            System.out.println("------------------");
+            System.out.println("Sesión cerrada");
+            System.out.println("------------------");
             gestorCuentas.delUsuarioActivo(); // Cerrar sesión
-        } else if (eleccion == Acceso + 2) {
+        } else if (eleccion == indiceSalidas + 2) {
             fin = true; // Salir
         } else {
             throw new OpcionNoDisponibleException();

@@ -9,6 +9,7 @@ import Models.Permisos.GestorPermisos;
 import Models.Permisos.Permiso;
 
 public abstract class GestorAbstracto<T> {
+
     protected boolean permisoLectura;
     protected boolean permisoEscritura;
     protected String nombrePermiso;
@@ -30,6 +31,8 @@ public abstract class GestorAbstracto<T> {
         return nombrePermiso;
     }
 
+    public abstract void menu() throws OpcionNoDisponibleException, NoPermisoException, NumberFormatException;
+
     protected Boolean tienePermiso() throws NoPermisoException {
         int contador = 0;
         while (!permisoLectura && contador < gestorCuentas.getUsuarioActivo().getRol().getPermisos().length) {
@@ -46,5 +49,4 @@ public abstract class GestorAbstracto<T> {
         return permisoLectura;
     }
 
-    public abstract void menu() throws OpcionNoDisponibleException, NoPermisoException, NumberFormatException;
 }

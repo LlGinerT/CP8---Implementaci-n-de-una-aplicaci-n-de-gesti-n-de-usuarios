@@ -1,17 +1,17 @@
 package Models.Roles;
 
-import java.util.ArrayList;
-
 import Models.Permisos.Permiso;
 
 public abstract class Rol {
 
     private String nombre;
-    protected ArrayList<Permiso> permisos;
+    private Boolean basico;
+    protected Permiso[] permisos;
 
-    public Rol(String nombre) {
+    public Rol(String nombre, boolean basico) {
         this.nombre = nombre;
-        this.permisos = new ArrayList<>();
+        this.basico = basico;
+        this.permisos = new Permiso[2];
         permisosIniciales();
     }
 
@@ -23,7 +23,11 @@ public abstract class Rol {
         this.nombre = nombre;
     }
 
-    public ArrayList<Permiso> getPermisos() {
+    public boolean getBasico() {
+        return basico;
+    }
+
+    public Permiso[] getPermisos() {
         return permisos;
     }
 

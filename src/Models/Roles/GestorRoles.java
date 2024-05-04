@@ -6,32 +6,33 @@ import Excepciones.NoPermisoException;
 import Excepciones.OpcionNoDisponibleException;
 import Models.GestorAbstracto;
 import Models.Cuentas.GestorCuentas;
+import Models.Cuentas.Usuario;
 import Models.Permisos.GestorPermisos;
 import Models.Permisos.Permiso;
 import Utils.Input;
 
 public class GestorRoles extends GestorAbstracto<Rol> {
 
-    public GestorRoles(GestorCuentas gestorCuentas, GestorPermisos gestorAuxiliar) {
+    public GestorRoles(GestorCuentas gestorCuentas) {
         super("PermisoRoles");
         this.gestorCuentas = gestorCuentas;
-        this.gestorPermisos = gestorAuxiliar;
+        this.gestorPermisos = new GestorPermisos();
         lista = new ArrayList<>();
         lista.add(new Admin());
         lista.add(new Privilegiado());
-        lista.add(new Estandar());
+        lista.add(new Regular());
     }
 
     @Override
-    public void menu() throws NoPermisoException, OpcionNoDisponibleException {
+    public void menu() throws NoPermisoException, OpcionNoDisponibleException, NumberFormatException {
         boolean atras = false;
-        boolean permiso = tienePermiso();
-        while (!atras && permiso) {
+        while (!atras && tienePermiso()) {
             System.out.println("ADMINISTRAR ROLES");
             if (!permisoEscritura) {
                 System.out.println("-------------------:");
                 System.out.println("1) Mostrar Roles");
                 System.out.println("2) atrás");
+                System.out.println("-------------------:");
             }
             if (permisoEscritura) {
                 System.out.println("-------------------:");
@@ -39,8 +40,10 @@ public class GestorRoles extends GestorAbstracto<Rol> {
                 System.out.println("2) Modificar Roles");
                 System.out.println("3) Eliminar Rol");
                 System.out.println("4) atrás");
+                System.out.println("-------------------:");
             }
             int eleccion = Input.comprobarEntero();
+            System.out.println("-------------------:");
             switch (eleccion) {
                 case 1:
                     mostrarRoles();
@@ -61,7 +64,11 @@ public class GestorRoles extends GestorAbstracto<Rol> {
                     break;
 
                 case 4:
-                    atras = true;
+                    if (permisoEscritura) {
+                        atras = true;
+                    } else {
+                        throw new OpcionNoDisponibleException();
+                    }
                     break;
                 default:
                     throw new OpcionNoDisponibleException();
@@ -77,48 +84,49 @@ public class GestorRoles extends GestorAbstracto<Rol> {
             System.out.println("Permisos: ");
             for (Permiso permiso : rol.getPermisos()) {
                 System.out.println("   -Permiso: " + permiso.getNombre());
+                System.out.println("   -Permiso de lectura: " + permiso.getLectura());
                 System.out.println("   -Permiso de escritura: " + permiso.getEscritura());
                 System.out.println("---------------------------------------");
             }
         }
     }
 
-    public void modificarRol() throws OpcionNoDisponibleException {
+    public void modificarRol() throws OpcionNoDisponibleException, NumberFormatException, NoPermisoException {
         boolean atras = false;
         System.out.println("¿Que rol quieres modificar?");
         String inputUsuario = Input.scanner();
-        Rol tempRol = null;
-        int contador = 0;
-        while (tempRol == null && contador < lista.size()) {
-            Rol rolComparar = lista.get(contador);
-            if (rolComparar.getNombre().equalsIgnoreCase(inputUsuario)) {
-                tempRol = rolComparar;
-            }
-            contador++;
-        }
+        Rol tempRol = buscarRol(inputUsuario);
         if (tempRol == null) {
+            System.out.println("-------------------");
             System.out.println("El rol no existe;");
+            System.out.println("-------------------");
             atras = true;
-        }
-        if (tempRol != null) {
+        } else if (tempRol.getBasico()) {
+            System.out.println("-------------------");
+            System.out.println("Este rol no se puede modificar.");
+            System.out.println("-------------------");
+        } else if (tempRol != null) {
             System.out.println("-------------------");
             System.out.println("MODIFICAR ROL: ");
             System.out.println(tempRol.getNombre());
             System.out.println("-------------------");
-            while (!atras) {
+            while (!atras && tienePermiso()) {
                 System.out.println("1) Cambiar nombre");
-                System.out.println("2) Gestionar permisos");
+                System.out.println("2) Modificar permisos");
                 System.out.println("3) atrás");
+                System.out.println("-------------------");
                 int eleccion = Input.comprobarEntero();
+                System.out.println("-------------------");
                 switch (eleccion) {
                     case 1:
                         String nuevoNombre = Input.comprobarSoloLetras();
                         tempRol.setNombre(nuevoNombre);
                         System.out.println("Nombre cambiado");
+                        System.out.println("-------------------");
                         break;
 
                     case 2:
-                        gestionarPermisos(tempRol);
+                        gestorPermisos.menu(tempRol);
                         break;
 
                     case 3:
@@ -132,28 +140,51 @@ public class GestorRoles extends GestorAbstracto<Rol> {
         }
     }
 
-    public void eliminarRol() {
-        boolean atras = false;
-        System.out.println("¿Que rol quieres eliminar?");
-        String inputUsuario = Input.scanner();
-        Rol tempRol = null;
+    public Rol buscarRol(String nombreRol) {
+        Rol rolEncontrado = null;
         int contador = 0;
-        while (tempRol == null && contador < lista.size()) {
-            Rol rolComparar = lista.get(contador);
-            if (rolComparar.getNombre().equalsIgnoreCase(inputUsuario)) {
-                tempRol = rolComparar;
+        while (rolEncontrado == null && contador < lista.size()) {
+            Rol compararRol = lista.get(contador);
+            if (compararRol.getNombre().equalsIgnoreCase(nombreRol)) {
+                rolEncontrado = compararRol;
             }
             contador++;
         }
+        return rolEncontrado;
+    }
+
+    public void eliminarRol() {
+        boolean atras = false;
+        System.out.println("-------------------");
+        System.out.println("¿Que rol quieres eliminar?");
+        System.out.println("-------------------");
+        String inputUsuario = Input.scanner();
+        Rol tempRol = buscarRol(inputUsuario);
         if (tempRol == null) {
-            System.out.println("El rol no existe;");
+            System.out.println("-------------------");
+            System.out.println("El rol no existe");
+            System.out.println("-------------------");
+            atras = true;
+        } else if (!tempRol.getBasico()) {
+            System.out.println("-------------------");
+            System.out.println("No se puede eliminar este rol");
+            System.out.println("-------------------");
             atras = true;
         }
         while (!atras && tempRol != null) {
             System.out.println("¿Seguro que quieres eliminar " + tempRol.getNombre() + "(S/N)");
             String continuar = Input.comprobarSoloLetras();
             if (continuar.equalsIgnoreCase("s")) {
+                System.out.println("-------------------");
                 System.out.println("Se ha eliminado el rol" + tempRol.getNombre() + "correctamente");
+                System.out.println("-------------------");
+                for (Usuario cuenta : gestorCuentas.getLista()) {
+                    if (cuenta.getRol().equals(tempRol)) {
+                        cuenta.setRol(
+                                buscarRol("regular"));
+                        System.out.println("");
+                    }
+                }
                 lista.remove(tempRol);
                 atras = true;
                 break;
@@ -163,153 +194,6 @@ public class GestorRoles extends GestorAbstracto<Rol> {
             } else {
                 System.out.println(continuar
                         + " no es una respuesta valida. Vuelva a introducir una respuesta.");
-            }
-        }
-    }
-
-    public void gestionarPermisos(Rol rol) throws OpcionNoDisponibleException {
-        boolean atras = false;
-        for (Permiso permiso : rol.getPermisos()) {
-            System.out.println("   -Permiso: " + permiso.getNombre());
-            System.out.println("   -Permiso de escritura: " + permiso.getEscritura());
-            System.out.println("---------------------------------------");
-        }
-        while (!atras) {
-            System.out.println("1) Añadir permiso");
-            System.out.println("2) Modificar permiso");
-            System.out.println("3) Atrás");
-            int eleccion = Input.comprobarEntero();
-            System.out.println("---------------------------------------");
-            switch (eleccion) {
-                case 1:
-                    for (Permiso permiso : rol.getPermisos()) {
-                        System.out.println("   -Permiso: " + permiso.getNombre());
-                        System.out.println("   -Permiso de escritura: " + permiso.getEscritura());
-                        System.out.println("---------------------------------------");
-                    }
-                    System.out.println("¿Que permiso quieres añadir?");
-                    String inputUsuario = Input.scanner();
-                    Permiso tempPermiso = null;
-                    int contador = 0;
-                    while (tempPermiso == null && contador < gestorPermisos.getLista().size()) {
-                        Permiso permisoComparar = gestorPermisos.getLista().get(contador);
-                        if (permisoComparar.getNombre().equalsIgnoreCase(inputUsuario)
-                                && !rol.getPermisos().contains(permisoComparar)) {
-                            tempPermiso = gestorPermisos.getLista().get(contador);
-                            System.out.println(tempPermiso.getNombre() + " añadido correctamente");
-                        }
-                        contador++;
-                        if (tempPermiso == null && rol.getPermisos().contains(permisoComparar)) {
-                            System.out.println("El rol ya tiene ese permiso");
-                            break;
-                        }
-                    }
-                    if (tempPermiso != null) {
-                        rol.getPermisos().add(tempPermiso);
-                    } else {
-                        System.out.println("No se encuentra el permiso");
-                    }
-                    break;
-
-                case 2:
-                    for (Permiso permiso : rol.getPermisos()) {
-                        System.out.println("   -Permiso: " + permiso.getNombre());
-                        System.out.println("   -Permiso de escritura: " + permiso.getEscritura());
-                        System.out.println("---------------------------------------");
-                    }
-                    System.out.println("¿Que permiso quieres modificar?");
-                    inputUsuario = Input.scanner();
-                    tempPermiso = null;
-                    contador = 0;
-                    while (tempPermiso == null && contador < rol.getPermisos().size()) {
-                        Permiso permisoComparar = rol.getPermisos().get(contador);
-                        if (permisoComparar.getNombre().equalsIgnoreCase(inputUsuario)) {
-                            tempPermiso = permisoComparar;
-                        }
-                        contador++;
-                    }
-                    if (tempPermiso == null) {
-                        System.out.println("No se encuentra el permiso");
-                    }
-                    modificarPermisos(tempPermiso, rol);
-                    break;
-
-                case 3:
-                    atras = true;
-                    break;
-
-                default:
-                    throw new OpcionNoDisponibleException();
-            }
-        }
-
-    }
-
-    public void modificarPermisos(Permiso permiso, Rol rol) throws OpcionNoDisponibleException {
-        boolean atras = false;
-        System.out.println("   -Permiso: " + permiso.getNombre());
-        System.out.println("   -Permiso de escritura: " + permiso.getEscritura());
-        System.out.println("---------------------------------------");
-        while (!atras) {
-            System.out.println("1) Modificar permiso escritura");
-            System.out.println("2) Quitar permiso");
-            System.out.println("3) Atrás");
-            int eleccion = Input.comprobarEntero();
-            switch (eleccion) {
-                case 1:
-                    if (permiso.getEscritura()) {
-                        System.out.println("Quitar permiso de escritura en " + permiso.getNombre() + "? (S/N)");
-                        String continuar = Input.comprobarSoloLetras();
-                        if (continuar.equalsIgnoreCase("s")) {
-                            permiso.setEscritura(false);
-                            System.out.println("Se ha quitado el permiso de escritura correctamente");
-                            atras = true;
-                        } else if (continuar.equalsIgnoreCase("n")) {
-                            atras = true;
-                            break;
-                        } else {
-                            System.out.println(continuar
-                                    + " no es una respuesta valida. Vuelva a introducir una respuesta.");
-                        }
-                    } else {
-                        System.out.println("Añadir permiso de escritura en " + permiso.getNombre() + "? (S/N)");
-                        String continuar = Input.comprobarSoloLetras();
-                        if (continuar.equalsIgnoreCase("S")) {
-                            permiso.setEscritura(false);
-                            atras = true;
-                            System.out.println("Se ha añadido el permiso de escritura correctamente");
-                        } else if (continuar.equalsIgnoreCase("n")) {
-                            atras = true;
-                            break;
-                        } else {
-                            System.out.println(continuar
-                                    + " no es una respuesta valida. Vuelva a introducir una respuesta.");
-                        }
-                    }
-                    break;
-
-                case 2:
-                    System.out.println("¿Seguro que quieres quitar el permiso?(S/N)");
-                    String continuar = Input.comprobarSoloLetras();
-                    if (continuar.equalsIgnoreCase("S")) {
-                        System.out.println("Se ha quitado el permiso " + permiso.getNombre() + " correctamente");
-                        rol.getPermisos().remove(permiso);
-                        atras = true;
-                    } else if (continuar.equalsIgnoreCase("n")) {
-                        atras = true;
-                        break;
-                    } else {
-                        System.out.println(continuar
-                                + " no es una respuesta valida. Vuelva a introducir una respuesta.");
-                    }
-                    break;
-                case 3:
-                    atras = true;
-                    break;
-
-                default:
-                    throw new OpcionNoDisponibleException();
-
             }
         }
     }

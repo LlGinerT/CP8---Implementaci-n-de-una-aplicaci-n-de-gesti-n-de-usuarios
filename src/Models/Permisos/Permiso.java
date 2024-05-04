@@ -7,13 +7,27 @@ import Models.GestorAbstracto;
 public abstract class Permiso {
     protected String nombreMenu;
     protected String nombre;
+    protected boolean lectura;
     protected boolean escritura;
+    protected boolean basico = false;
     @SuppressWarnings("rawtypes")
     protected GestorAbstracto gestor;
 
-    public Permiso(boolean escritura) {
+    public Permiso(boolean lectura, boolean escritura) {
+        this.lectura = lectura;
         this.escritura = escritura;
+    }
 
+    public boolean getBasico() {
+        return basico;
+    }
+
+    public boolean getLectura() {
+        return lectura;
+    }
+
+    public void setLectura(boolean lectura) {
+        this.lectura = lectura;
     }
 
     public boolean getEscritura() {

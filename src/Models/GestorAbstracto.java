@@ -9,7 +9,7 @@ import Models.Permisos.GestorPermisos;
 import Models.Permisos.Permiso;
 
 public abstract class GestorAbstracto<T> {
-    protected boolean permiso;
+    protected boolean permisoLectura;
     protected boolean permisoEscritura;
     protected String nombrePermiso;
     protected GestorCuentas gestorCuentas;
@@ -32,18 +32,18 @@ public abstract class GestorAbstracto<T> {
 
     protected Boolean tienePermiso() throws NoPermisoException {
         int contador = 0;
-        while (!permiso && contador < gestorCuentas.getUsuarioActivo().getRol().getPermisos().size()) {
-            Permiso permisoUsuario = gestorCuentas.getUsuarioActivo().getRol().getPermisos().get(contador);
+        while (!permisoLectura && contador < gestorCuentas.getUsuarioActivo().getRol().getPermisos().length) {
+            Permiso permisoUsuario = gestorCuentas.getUsuarioActivo().getRol().getPermisos()[contador];
             if (permisoUsuario.getClass().getSimpleName().equals(nombrePermiso)) {
-                permiso = true;
+                permisoLectura = true;
                 permisoEscritura = permisoUsuario.getEscritura();
             }
             contador++;
         }
-        if (!permiso) {
+        if (!permisoLectura) {
             throw new NoPermisoException();
         }
-        return permiso;
+        return permisoLectura;
     }
 
     public abstract void menu() throws OpcionNoDisponibleException, NoPermisoException, NumberFormatException;

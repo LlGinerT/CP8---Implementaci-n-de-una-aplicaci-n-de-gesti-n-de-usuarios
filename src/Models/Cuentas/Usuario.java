@@ -1,6 +1,5 @@
 package Models.Cuentas;
 
-import Models.Roles.Admin;
 import Models.Roles.Rol;
 import Utils.EncoderContrasenyas;
 
@@ -17,7 +16,7 @@ public class Usuario {
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
-        this.rol = new Admin();
+
     }
 
     public String getNombre() {

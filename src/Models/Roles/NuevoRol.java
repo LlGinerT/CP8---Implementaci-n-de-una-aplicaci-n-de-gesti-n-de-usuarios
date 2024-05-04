@@ -3,7 +3,7 @@ package Models.Roles;
 public class NuevoRol extends Rol {
 
     public NuevoRol(String nombre) {
-        super(nombre);
+        super(nombre, false);
         // TODO Auto-generated constructor stub
     }
 

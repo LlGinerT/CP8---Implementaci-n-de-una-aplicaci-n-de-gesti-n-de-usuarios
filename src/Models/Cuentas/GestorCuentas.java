@@ -9,21 +9,34 @@ import Excepciones.OpcionNoDisponibleException;
 import Excepciones.UsuarioNoEncontradoException;
 import Models.GestorAbstracto;
 import Models.Permisos.Permiso;
+import Models.Roles.GestorRoles;
 import Utils.EncoderContrasenyas;
 import Utils.Input;
 
 public class GestorCuentas extends GestorAbstracto<Usuario> {
 
+    private GestorRoles gestorRoles = new GestorRoles(this);
     private Usuario usuarioActivo;
 
     public GestorCuentas() {
         super("PermisoCuentas");
         this.lista = new ArrayList<>();
+        this.gestorRoles = new GestorRoles(this);
         // usuario test a@a.com | b@b.com pass a.
         lista.add(new Usuario("a", "a", "a@a.com"));
         lista.add(new Usuario("b", "a", "b@b.com"));
         lista.get(0).setContrasenyaCodificada("a");
+        lista.get(0).setRol(gestorRoles.getLista().get(0));
         lista.get(1).setContrasenyaCodificada("a");
+        lista.get(1).setRol(gestorRoles.getLista().get(2));
+    }
+
+    public GestorRoles getGestorRoles() {
+        return gestorRoles;
+    }
+
+    public Usuario getUsuarioActivo() {
+        return usuarioActivo;
     }
 
     public void delUsuarioActivo() {
@@ -33,17 +46,17 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
     @Override
     protected Boolean tienePermiso() throws NoPermisoException {
         int contador = 0;
-        while (!permiso && contador < usuarioActivo.getRol().getPermisos().size()) {
-            Permiso permisoUsuario = usuarioActivo.getRol().getPermisos().get(contador);
+        while (!permisoLectura && contador < usuarioActivo.getRol().getPermisos().length) {
+            Permiso permisoUsuario = usuarioActivo.getRol().getPermisos()[contador];
             if (permisoUsuario.getClass().getSimpleName().equals(nombrePermiso)) {
-                permiso = true;
+                permisoLectura = true;
                 permisoEscritura = permisoUsuario.getEscritura();
             } else {
                 throw new NoPermisoException();
             }
             contador++;
         }
-        return permiso;
+        return permisoLectura;
     }
 
     @Override
@@ -113,10 +126,6 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
 
         }
 
-    }
-
-    public Usuario getUsuarioActivo() {
-        return usuarioActivo;
     }
 
     private Usuario buscarEmail() {
@@ -223,6 +232,8 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
                 throw new UsuarioNoEncontradoException();
             } else if (intentos >= 3) {
                 throw new MaxIntentosException();
+            } else if (usuarioValido.getRol() == null) {
+                System.out.println();
             }
 
         }
@@ -293,6 +304,7 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
             }
         }
         tempCuenta = new Usuario(nombre, apellido, email);
+        tempCuenta.setRol(gestorRoles.buscarRol("regular"));
         while (!atras && contrasenya == null) {
             System.out.println("Introduzca la contrasenya:");
             contrasenya = Input.scanner();

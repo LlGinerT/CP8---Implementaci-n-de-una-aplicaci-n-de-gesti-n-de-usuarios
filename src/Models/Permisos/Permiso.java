@@ -4,6 +4,9 @@ import Excepciones.NoPermisoException;
 import Excepciones.OpcionNoDisponibleException;
 import Models.GestorAbstracto;
 
+/* 
+ * Clase abstracta de permisos, se le ha de añadir un gestor para poder acceder a su menu.
+ */
 public abstract class Permiso {
     protected String nombreMenu;
     protected String nombre;

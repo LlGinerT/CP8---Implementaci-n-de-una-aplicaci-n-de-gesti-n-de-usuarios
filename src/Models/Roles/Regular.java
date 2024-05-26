@@ -4,11 +4,14 @@ import Models.Permisos.Permiso;
 import Models.Permisos.PermisoCuentas;
 import Models.Permisos.PermisoRoles;
 
+/* 
+ * Rol básico, no se puede eliminar.
+ */
 public class Regular extends Rol {
 
     public Regular() {
         super("regular", true);
-        // TODO Auto-generated constructor stub
+
     }
 
     @Override

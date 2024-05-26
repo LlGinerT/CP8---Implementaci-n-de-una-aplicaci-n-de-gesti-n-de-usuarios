@@ -35,7 +35,7 @@ public class GestorPermisos extends GestorAbstracto<Permiso> {
         System.out.println("---------------------------------------");
         while (!atras) {
             for (int i = 0; i < rol.getPermisos().length; i++) {
-                System.out.println((i + 1) + ") " + rol.getPermisos()[i]);
+                System.out.println((i + 1) + ") " + rol.getPermisos()[i].getNombre());
             }
             int indiceSalidas = rol.getPermisos().length;
             System.out.println((indiceSalidas + 1) + ") Atrás");
@@ -71,6 +71,14 @@ public class GestorPermisos extends GestorAbstracto<Permiso> {
 
     }
 
+    /**
+     * Método para modificar los permisos, no se puede modificar el permiso de
+     * lectura de los permisos básicos.
+     * Si se elimina el de lectura, se elimina el de escritura.
+     * 
+     * @param permiso
+     * @throws OpcionNoDisponibleException
+     */
     public void modificarPermisos(Permiso permiso) throws OpcionNoDisponibleException {
         boolean atras = false;
         while (!atras) {
@@ -85,10 +93,15 @@ public class GestorPermisos extends GestorAbstracto<Permiso> {
                     if (!permiso.getBasico()) {
                         if (permiso.getLectura()) {
                             System.out.println("Quitar permiso de Lectura?(S/N)");
+                            if (permiso.getEscritura()) {
+                                System.out
+                                        .println("Si quitas el permiso de Lectura también se quitara el de escritura");
+                            }
                             System.out.println("------------------");
                             String continuar = Input.comprobarSoloLetras();
                             if (continuar.equalsIgnoreCase("s")) {
                                 permiso.setLectura(false);
+                                permiso.setEscritura(false);
                                 System.out.println("------------------");
                                 System.out.println("Se ha quitado el permiso de lectura correctamente");
                                 System.out.println("------------------");

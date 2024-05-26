@@ -5,6 +5,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+/* 
+ * Método que concatena una cadena de 16 bytes aleatorios a la contraseña del usuario
+ * y la transforma en un hash utilizando el algoritmo SHA-256
+ * PD: Lo mas seguro es que el salt y la contraseña no se almacenen en el mismo lugar,
+ * para el ejercicio ambos están almacenados en el usuario.
+ */
 public class EncoderContrasenyas {
 
     // Método para generar un salt aleatorio

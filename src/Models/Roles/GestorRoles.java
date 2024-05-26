@@ -13,6 +13,11 @@ import Utils.Input;
 
 public class GestorRoles extends GestorAbstracto<Rol> {
 
+    /**
+     * Constructor de la clase GestorRoles, requiere el GestorCuentas.
+     * 
+     * @param gestorCuentas
+     */
     public GestorRoles(GestorCuentas gestorCuentas) {
         super("PermisoRoles");
         this.gestorCuentas = gestorCuentas;
@@ -153,6 +158,9 @@ public class GestorRoles extends GestorAbstracto<Rol> {
         return rolEncontrado;
     }
 
+    /**
+     * Elimina el rol seleccionado, si no es un rol básico.
+     */
     public void eliminarRol() {
         boolean atras = false;
         System.out.println("-------------------");

@@ -10,6 +10,7 @@ import Excepciones.UsuarioNoEncontradoException;
 import Models.GestorAbstracto;
 import Models.Permisos.Permiso;
 import Models.Roles.GestorRoles;
+import Models.Roles.Rol;
 import Utils.EncoderContrasenyas;
 import Utils.Input;
 
@@ -18,16 +19,22 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
     private GestorRoles gestorRoles = new GestorRoles(this);
     private Usuario usuarioActivo;
 
+    /**
+     * Constructor del GestorCuentas, que inicializa un GestorRoles y dos cuentas de
+     * prueba
+     * admin@admin.com y basico@basico.com
+     */
     public GestorCuentas() {
         super("PermisoCuentas");
         this.lista = new ArrayList<>();
         this.gestorRoles = new GestorRoles(this);
-        // usuario test a@a.com | b@b.com pass a.
-        lista.add(new Usuario("a", "a", "a@a.com"));
-        lista.add(new Usuario("b", "a", "b@b.com"));
-        lista.get(0).setContrasenyaCodificada("a");
+        // usuario test admin@admin.com pass admin rol admin | basico@basico.com
+        // pass basico rol regular.
+        lista.add(new Usuario("admin", "admin", "admin@admin.com"));
+        lista.add(new Usuario("basico", "basico", "basico@basico.com"));
+        lista.get(0).setContrasenyaCodificada("admin");
         lista.get(0).setRol(gestorRoles.getLista().get(0));
-        lista.get(1).setContrasenyaCodificada("a");
+        lista.get(1).setContrasenyaCodificada("basico");
         lista.get(1).setRol(gestorRoles.getLista().get(2));
     }
 
@@ -43,6 +50,9 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
         this.usuarioActivo = null;
     }
 
+    /*
+     * Muestra el menu, según los permisos que tengas.
+     */
     @Override
     public void menu() throws OpcionNoDisponibleException, NoPermisoException, NumberFormatException {
         boolean atras = false;
@@ -118,15 +128,22 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
 
     }
 
-    public boolean inicioSesion() throws MaxIntentosException, UsuarioNoEncontradoException {
-        boolean sesionIniciada = false;
+    /**
+     * Método para iniciar sesión dentro de un numero de intentos delimitados a 3.
+     * Si tu contraseña ha sido reiniciada no deja iniciar sesión.
+     * 
+     * @throws MaxIntentosException
+     * @throws UsuarioNoEncontradoException
+     */
+    public void inicioSesion() throws MaxIntentosException, UsuarioNoEncontradoException {
+        boolean fin = false;
         Usuario usuarioValido = null;
         boolean contrasenyaValida = false;
         int intentos = 0;
 
         System.out.println("INICIAR SESIÓN:");
 
-        while (!sesionIniciada && usuarioValido == null) {
+        while (!fin && usuarioValido == null) {
             System.out.println("---------------");
             System.out.println("Introduzca correo electrónico:");
             System.out.println("---------------");
@@ -136,21 +153,23 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
                 throw new UsuarioNoEncontradoException();
             } else if (intentos >= 3) {
                 throw new MaxIntentosException();
-            } else if (usuarioValido.getRol() == null) {
-                System.out.println();
+            } else if (usuarioValido.getContrasenyaCodificada() == null) {
+                System.out.println(
+                        "Su contraseña ha sido reiniciada.\nSiga las instrucciones en su correo electrónico para generar una nueva.");
+                fin = true;
             }
 
         }
         intentos = 0;
-        while (!sesionIniciada && !contrasenyaValida) {
+        while (!fin && !contrasenyaValida) {
 
             System.out.println("---------------");
             System.out.println("Introduzca contraseña;");
             System.out.println("---------------");
 
             // Aunque sea mas ilegible, creo que es mas seguro, que las contraseñas
-            // codificadas
-            // no se almacenen en memoria, y comprobarla simplemente con un boolean
+            // codificadas no se almacenen en memoria, o el menor tiempo posible
+            // y comprobarla simplemente con un booleano.
             contrasenyaValida = EncoderContrasenyas.encodeContrasenya(Input.scanner(), usuarioValido.getSalt())
                     .equals(usuarioValido.getContrasenyaCodificada());
 
@@ -167,11 +186,15 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
 
         if (usuarioValido != null && contrasenyaValida) {
             usuarioActivo = usuarioValido;
-            sesionIniciada = true;
+            fin = true;
         }
-        return sesionIniciada;
     }
 
+    /**
+     * Crear cuenta sin repetir email
+     * 
+     * @throws MaxIntentosException
+     */
     public void crearCuenta() throws MaxIntentosException {
         boolean atras = false;
         String nombre = null;
@@ -226,6 +249,9 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
         }
     }
 
+    /*
+     * Modificamos este método, por que el permiso de lectura de cuentas es básico.
+     */
     @Override
     protected Boolean tienePermiso() throws NoPermisoException {
         int contador = 0;
@@ -269,7 +295,17 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
         return usuarioEncontrado;
     }
 
-    private Usuario buscarUsuario() throws UsuarioNoEncontradoException, NumberFormatException {
+    /**
+     * Busca al usuario por email, nombre, apellido o ambos y muestra las
+     * coincidencias.
+     * 
+     * @return Usuario
+     * @throws UsuarioNoEncontradoException
+     * @throws NumberFormatException
+     * @throws OpcionNoDisponibleException
+     */
+    private Usuario buscarUsuario()
+            throws UsuarioNoEncontradoException, NumberFormatException, OpcionNoDisponibleException {
         boolean finBusqueda = false;
         Usuario usuarioEncontrado = null;
         System.out.println("BUSCAR USUARIO:");
@@ -328,7 +364,7 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
                     finBusqueda = true;
                     break;
                 default:
-                    throw new UsuarioNoEncontradoException();
+                    throw new OpcionNoDisponibleException();
             }
         }
         return usuarioEncontrado;
@@ -372,27 +408,35 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
             System.out.println("2) Cambiar apellido");
             System.out.println("3) Cambiar Email");
             System.out.println("4) Cambiar contraseña");
-            System.out.println("5) Atrás");
+            System.out.println("5) Cambiar rol");
+            System.out.println("6) Atrás");
             System.out.println("-------------------");
 
             int eleccion = Input.comprobarEntero();
             System.out.println("-------------------");
             switch (eleccion) {
                 case 1:
+                    System.out.println("CAMBIAR NOMBRE");
+                    System.out.println("-------------------");
                     tempUsuario.setNombre(Input.comprobarSoloLetras());
                     System.out.println("-------------------");
                     break;
                 case 2:
+                    System.out.println("CAMBIAR APELLIDO");
+                    System.out.println("-------------------");
                     tempUsuario.setApellido(Input.comprobarSoloLetras());
                     System.out.println("-------------------");
                     break;
                 case 3:
+                    System.out.println("CAMBIAR EMAIL");
+                    System.out.println("-------------------");
                     tempUsuario.setEmail(Input.comprobarSoloLetras());
                     System.out.println("-------------------");
                     break;
                 case 4:
-                    System.out.println("-------------------");
                     if (tempUsuario.equals(usuarioActivo)) {
+                        System.out.println("CAMBIAR CONTRASEÑA");
+                        System.out.println("-------------------");
                         crearContrasenya(usuarioActivo, true);
                     } else {
                         System.out.println("Contraseña reiniciada");
@@ -404,6 +448,20 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
                     }
                     break;
                 case 5:
+                    System.out.println("Introduzca nuevo rol");
+                    System.out.println("-------------------");
+                    Rol tempRol = null;
+                    tempRol = gestorRoles.buscarRol(Input.comprobarSoloLetras());
+                    if (tempRol == null) {
+                        System.out.println("El rol no existe");
+                        System.out.println("-------------------");
+                    } else {
+                        tempUsuario.setRol(tempRol);
+                        System.out.println(
+                                "El rol del usuario " + tempUsuario.getEmail() + " ahora es: " + tempRol.getNombre());
+                    }
+                    break;
+                case 6:
                     atras = true;
                     break;
                 default:
@@ -412,7 +470,7 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
         }
     }
 
-    private void eliminarUsuario() throws NumberFormatException {
+    private void eliminarUsuario() throws NumberFormatException, OpcionNoDisponibleException {
         mostrarUsuarios();
         System.out.println("-------------------");
         System.out.println("Elige un usuario:");
@@ -468,6 +526,14 @@ public class GestorCuentas extends GestorAbstracto<Usuario> {
         }
     }
 
+    /**
+     * Método que comprueba la contraseña se ha introducido correctamente antes de
+     * codificarla, si es incorrecta la elimina.
+     * 
+     * @param usuario
+     * @param reiniciada
+     * @throws MaxIntentosException
+     */
     private void crearContrasenya(Usuario usuario, boolean reiniciada) throws MaxIntentosException {
         String contrasenya = null;
         String repetirContrasenya = null;

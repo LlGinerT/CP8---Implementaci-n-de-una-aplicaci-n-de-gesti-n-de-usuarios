@@ -2,6 +2,9 @@ package Models.Roles;
 
 import Models.Permisos.Permiso;
 
+/* 
+ * Clase abstracta del rol, cada rol tendrá unos permisos iniciales diferentes.
+ */
 public abstract class Rol {
 
     private String nombre;

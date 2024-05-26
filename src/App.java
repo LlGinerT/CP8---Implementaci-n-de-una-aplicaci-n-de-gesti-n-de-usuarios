@@ -36,6 +36,12 @@ public class App {
         }
     }
 
+    /**
+     * Menu inicial que se muestra hasta que se inicia sesión.
+     * 
+     * @throws OpcionNoDisponibleException
+     * @throws NumberFormatException
+     */
     private static void menuInicial() throws OpcionNoDisponibleException, NumberFormatException {
         System.out.println("------------------");
         System.out.println("1) Iniciar Sesión");
@@ -73,16 +79,34 @@ public class App {
         }
     }
 
+    /**
+     * Menu principal del usuario, muestra las opciones dinamicamente según los
+     * permisos que tenga el usuario "Activo"
+     * 
+     * @throws OpcionNoDisponibleException
+     * @throws NumberFormatException
+     */
     @SuppressWarnings("rawtypes")
     private static void menuPrincipal() throws OpcionNoDisponibleException, NumberFormatException {
+        int contadorIndices = 0;
         System.out.println("------------------");
         System.out.println("MENU PRINCIPAL");
         System.out.println("------------------");
         Permiso[] permisosUsuarioActivo = gestorCuentas.getUsuarioActivo().getRol().getPermisos();
+        /*
+         * Imprimimos la cabecera del nombre del menu de cada permiso y a su vez,
+         * vinculamos cada permiso
+         * con su gestor correspondiente para poder acceder a su menu.
+         * PD: Creo que aquí me he liado un poco y estoy seguro que hay alguna forma mas
+         * sencilla de hacerlo.
+         */
         for (int i = 0; i < permisosUsuarioActivo.length; i++) {
             Permiso permisoActivo = permisosUsuarioActivo[i];
             if (permisoActivo.getLectura()) {
                 System.out.println((i + 1) + ") " + permisoActivo.getNombreMenu());
+                contadorIndices += 1;
+                // Sumando 1 por cada permiso nos permite mover dinamicamente las opciones
+                // 'cerrar sesión' y 'salir' según el numero de permisos
                 for (GestorAbstracto gestor : gestores) {
                     if (permisoActivo.getClass().getSimpleName().equals(gestor.getNombrePermiso())) {
                         permisosUsuarioActivo[i].setGestor(gestor);
@@ -90,21 +114,20 @@ public class App {
                 }
             }
         }
-        int indiceSalidas = permisosUsuarioActivo.length;
-        System.out.println((indiceSalidas + 1) + ") Cerrar sesión");
-        System.out.println((indiceSalidas + 2) + ") Salir");
+        System.out.println((contadorIndices + 1) + ") Cerrar sesión");
+        System.out.println((contadorIndices + 2) + ") Salir");
         System.out.println("------------------");
         int eleccion = (Input.comprobarEntero());
         System.out.println("------------------");
 
         if (eleccion >= 1 && eleccion <= permisosUsuarioActivo.length) {
             permisosUsuarioActivo[(eleccion - 1)].accesoMenu();
-        } else if (eleccion == indiceSalidas + 1) {
+        } else if (eleccion == contadorIndices + 1) {
             System.out.println("------------------");
             System.out.println("Sesión cerrada");
             System.out.println("------------------");
-            gestorCuentas.delUsuarioActivo(); // Cerrar sesión
-        } else if (eleccion == indiceSalidas + 2) {
+            gestorCuentas.delUsuarioActivo();
+        } else if (eleccion == contadorIndices + 2) {
             fin = true; // Salir
         } else {
             throw new OpcionNoDisponibleException();
@@ -112,14 +135,3 @@ public class App {
     }
 
 }
-/*
- * [x] Gestion Permisos y roles
- * [] Archivos NO
- * [x] acabar permisos
- * [x] no pueden haber 2 mails iguales quizas excepcion
- * [x] excepcion path Opcion no disponible
- * [] asignar regular al crear cuenta
- * [] No poder eliminar Admin, ni basico, y meter eliminar rol en modificar rol
- * y cambiar a gestionar roles
- * [] refactorizar
- */

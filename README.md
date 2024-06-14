@@ -1,18 +1,13 @@
-## Getting Started
+## ENUNCIADO DE LA ACTIVIDAD:
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+Imaginemos que estás trabajando como desarrollador en una empresa de software y te han asignado la tarea de implementar una aplicación de gestión de usuarios. Esta aplicación debe ser capaz de crear usuarios, asignar roles y permisos, y realizar operaciones de autenticación.
 
-## Folder Structure
+Para llevar a cabo esta tarea, responde a las siguientes preguntas:
 
-The workspace contains two folders by default, where:
+1. Define una clase "Usuario" con los siguientes atributos: nombre, apellido, correo electrónico y contraseña. Además, implementa los métodos necesarios para obtener y establecer estos atributos.
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+2. Considera la necesidad de asignar roles y permisos a los usuarios. Diseña una estructura de clases que permita asignar roles y permisos a un usuario y verificar si un usuario tiene un permiso específico.
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+3. Implementa una funcionalidad de autenticación en la clase "Usuario" utilizando técnicas de encriptación y comparación de contraseñas seguras.
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
-
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+4. Considera la posibilidad de utilizar herencia o interfaces para mejorar la estructura de clases y permitir una mayor flexibilidad en la gestión de usuarios.
